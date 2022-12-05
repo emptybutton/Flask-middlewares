@@ -55,3 +55,26 @@ class ErrorJSONResponseFormatter(ErrorHandler, ABC):
     @abstractmethod
     def _get_status_code_from(self, error: Exception) -> int:
         pass
+
+
+class TemplatedErrorJSONResponseFormatter(ErrorJSONResponseFormatter, ABC):
+    def __init__(self, is_format_message: bool = True, is_format_type: bool = False):
+        self.is_format_message = is_format_message
+        self.is_format_type = is_format_type
+
+    def _get_response_body_from(self, error: Exception) -> dict:
+        response_body = dict()
+
+        if self.is_format_message:
+            response_body['message'] = self._get_error_message_from(error)
+
+        if self.is_format_type:
+            response_body['error-type'] = self._get_error_type_name_from(error)
+
+        return response_body
+
+    def _get_error_message_from(self, error: Exception) -> str:
+        return str(error)
+
+    def _get_error_type_name_from(self, error: Exception) -> str:
+        return type(error).__name__
