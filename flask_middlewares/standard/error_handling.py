@@ -78,3 +78,14 @@ class TemplatedErrorJSONResponseFormatter(ErrorJSONResponseFormatter, ABC):
 
     def _get_error_type_name_from(self, error: Exception) -> str:
         return type(error).__name__
+
+
+class TypeErrorHandler(ErrorHandler, ABC):
+    _correct_error_types_to_handle: Iterable[Exception]
+    _is_error_correctness_under_supertype: bool = False
+
+    def is_error_correct_to_handle(self, error: Exception) -> bool:
+        return (all if self._is_error_correctness_under_supertype else any)(
+            isinstance(error, correct_error_type)
+            for correct_error_type in self._correct_error_types_to_handle
+        )
