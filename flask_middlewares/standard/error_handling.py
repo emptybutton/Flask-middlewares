@@ -39,3 +39,19 @@ class ErrorHandler(IErrorHandler, ABC):
     @abstractmethod
     def _handle_error(self, error: Exception) -> any:
         pass
+
+
+class ErrorJSONResponseFormatter(ErrorHandler, ABC):
+    def _handle_error(self, error: Exception) -> any:
+        response = jsonify(self._get_response_body_from(error))
+        response.status_code = jsonify(self._get_status_code_from(error))
+
+        return response
+
+    @abstractmethod
+    def _get_response_body_from(self, error: Exception) -> dict:
+        pass
+
+    @abstractmethod
+    def _get_status_code_from(self, error: Exception) -> int:
+        pass
