@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Iterable, Self, Callable
 
+from flask_middlewares import Middleware
+
 
 class IErrorHandler(ABC):
     def __call__(self, error: Exception) -> any:
@@ -89,3 +91,14 @@ class TypeErrorHandler(ErrorHandler, ABC):
             isinstance(error, correct_error_type)
             for correct_error_type in self._correct_error_types_to_handle
         )
+
+class ErrorMiddleware(Middleware, ABC):
+    def call_route(self, route: Callable, *args, **kwargs) -> any:
+        try:
+            return route(*args, **kwargs)
+        except Exception as error:
+            return self._handle_error(error)
+
+    @abstractmethod
+    def _handle_error(self, error: Exception) -> any:
+        pass
