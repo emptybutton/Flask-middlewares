@@ -18,3 +18,10 @@ class ProxyErrorHandler(IErrorHandler):
 
             if self.is_return_delegated and result is not None:
                 return result
+
+    @classmethod
+    def create_factory_decorator(cls, *args, **kwargs) -> Self:
+        def factory_decorator(func: Callable) -> any:
+            return cls((func, ), *args, **kwargs)
+
+        return factory_decorator
