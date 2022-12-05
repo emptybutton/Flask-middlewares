@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Iterable, Self, Callable
+from functools import cached_property
 
 from flask_middlewares import Middleware
 
@@ -102,3 +103,19 @@ class ErrorMiddleware(Middleware, ABC):
     @abstractmethod
     def _handle_error(self, error: Exception) -> any:
         pass
+
+
+class HandlerErrorMiddleware(ErrorMiddleware, ABC):
+    _ERROR_HANDLER_RESOURCE: Iterable[IErrorHandler] | IErrorHandler
+    _PROXY_ERROR_HANDLER_FACTORY: Callable[[Iterable[IErrorHandler]], IErrorHandler] = ProxyErrorHandler
+
+    def _handle_error(self, error: Exception) -> any:
+        return self._error_handler(error)
+
+    @cached_property
+    def _error_handler(self) -> IErrorHandler:
+        return (
+            self._PROXY_ERROR_HANDLER_FACTORY(self._ERROR_HANDLER_RESOURCE)
+            if isinstance(self._ERROR_HANDLER_RESOURCE, Iterable)
+            else self._ERROR_HANDLER_RESOURCE
+        )
