@@ -25,3 +25,17 @@ class ProxyErrorHandler(IErrorHandler):
             return cls((func, ), *args, **kwargs)
 
         return factory_decorator
+
+
+class ErrorHandler(IErrorHandler, ABC):
+    def __call__(self, error: Exception) -> any:
+        if self.is_error_correct_to_handle(error):
+            return self._handle_error(error)
+
+    @abstractmethod
+    def is_error_correct_to_handle(self, error: Exception) -> bool:
+        pass
+
+    @abstractmethod
+    def _handle_error(self, error: Exception) -> any:
+        pass
