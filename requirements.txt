@@ -1,0 +1,3 @@
+beautiful_repr==1.1.1
+Flask==2.2.2
+flask_sqlalchemy==3.0.2
