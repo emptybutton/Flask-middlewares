@@ -119,3 +119,12 @@ class HandlerErrorMiddleware(ErrorMiddleware, ABC):
             if isinstance(self._ERROR_HANDLER_RESOURCE, Iterable)
             else self._ERROR_HANDLER_RESOURCE
         )
+
+
+class CustomHandlerErrorMiddleware(HandlerErrorMiddleware):
+    def __init__(self, error_handler_resource: Iterable[IErrorHandler] | IErrorHandler):
+        self._ERROR_HANDLER_RESOURCE = error_handler_resource
+
+    @cached_property
+    def error_handler(self) -> IErrorHandler:
+        return self._error_handler
