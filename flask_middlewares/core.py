@@ -230,3 +230,36 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
     @classmethod
     def __get_global_middlewares_from(cls, config: dict[str, Iterable[Middleware]]) -> tuple[Middleware]:
         return tuple(config.get(cls._config_field_names['global_middlewares'], tuple()))
+
+
+class MiddlewareKeeper(ABC):
+    _middleware_attribute_names: Iterable[str] = ('_internal_middlewares', )
+    _proxy_middleware_factory: Callable[[Iterable[Middleware]], ProxyMiddleware] = ProxyMiddleware
+
+    _proxy_middleware: Optional[ProxyMiddleware]
+
+    def __init__(self):
+        self._update_middlewares()
+
+    @property
+    def _middlewares(self) -> Middleware:
+        return tuple(self._proxy_middleware.middlewares)
+
+    def _update_middlewares(self) -> None:
+        self._proxy_middleware = self._proxy_middleware_factory(tuple(self.__parse_middlewares()))
+
+    def __parse_middlewares(self) -> list[Middleware]:
+        middlewares = list()
+
+        for attribute_name in self._middleware_attribute_names:
+            if not hasattr(self, attribute_name):
+                continue
+
+            attribute_value = getattr(self, attribute_name)
+
+            if isinstance(attribute_value, Iterable):
+                middlewares.extend(attribute_value)
+            else:
+                middlewares.append(attribute_value)
+
+        return middlewares
