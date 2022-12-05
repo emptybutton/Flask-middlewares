@@ -1,7 +1,18 @@
 from abc import ABC, abstractmethod
 from typing import Callable, Optional, Iterable, Self
+
 from functools import wraps, partial
-class Middleware(ABC):
+class IMiddleware(ABC):
+    @abstractmethod
+    def decorate(self, route: Callable) -> Callable:
+        pass
+
+    @abstractmethod
+    def call_route(self, route: Callable, *args, **kwargs) -> any:
+        pass
+
+
+class Middleware(IMiddleware, ABC):
     def decorate(self, route: Callable) -> Callable:
         @wraps(route)
         def body(*args, **kwargs) -> any:
@@ -9,6 +20,5 @@ class Middleware(ABC):
 
         return body
 
-    @abstractmethod
     def call_route(self, route: Callable, *args, **kwargs) -> any:
         pass
