@@ -91,8 +91,24 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
     ):
         self.middleware = self._proxy_middleware_factory(middlewares)
 
-        self.default_view_name_set = self.__get_set_from_raw_data(default_view_names)
-        self.default_blueprint_set = self.__get_set_from_raw_data(default_blueprints)
+        self.default_view_name_set = default_view_names
+        self.default_blueprint_set = default_blueprints
+
+    @property
+    def default_view_name_set(self) -> BinarySet:
+        return self._default_view_name_set
+
+    @default_view_name_set.setter
+    def default_view_name_set(self, default_view_name_set: Iterable[str]) -> None:
+        self._default_view_name_set = self.__get_binary_set_from_raw_data(default_view_name_set)
+
+    @property
+    def default_blueprint_set(self) -> BinarySet:
+        return self._default_blueprint_set
+
+    @default_blueprint_set.setter
+    def default_blueprint_set(self, default_blueprint_set: Iterable[str | Blueprint]) -> None:
+        self._default_blueprint_set = self.__get_binary_set_from_raw_data(default_blueprint_set)
 
     def init_app(
         self,
