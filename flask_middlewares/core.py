@@ -101,8 +101,8 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         for_view_names: Iterable[BinarySet | str] = BinarySet(),
         for_blueprints: Iterable[BinarySet | str | Blueprint] = BinarySet(),
     ) -> None:
-        view_name_set = self.default_view_name_set & self.__get_set_from_raw_data(for_view_names)
-        blueprint_set = self.default_blueprint_set & self.__get_set_from_raw_data(for_blueprints)
+        view_name_set = self.default_view_name_set & self.__get_binary_set_from_raw_data(for_view_names)
+        blueprint_set = self.default_blueprint_set & self.__get_binary_set_from_raw_data(for_blueprints)
 
         blueprint_name_set = BinarySet(
             self.__optional_get_blueprint_names_from(blueprint_set.included)
@@ -217,11 +217,11 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         )
 
     @staticmethod
-    def __get_set_from_raw_data(raw_data: BinarySet | Iterable) -> BinarySet:
+    def __get_binary_set_from_raw_data(raw_data: Iterable) -> BinarySet:
         return raw_data if isinstance(raw_data, BinarySet) else BinarySet(raw_data)
 
     @staticmethod
-    def __get_blueprint_name_from(blueprints: None | Iterable[str | Blueprint]) -> tuple[str]:
+    def __optional_get_blueprint_names_from(blueprints: Iterable[str | Blueprint] | None) -> tuple[str] | None:
         return tuple(
             blueprint if isinstance(blueprint, str) else blueprint.name
             for blueprint in blueprints
