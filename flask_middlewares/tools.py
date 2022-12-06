@@ -21,43 +21,43 @@ def get_status_code_from(response: any) -> int:
 
 class BinarySet(StylizedMixin):
     _repr_fields = (
-        Field('including', formatter=TemplateFormatter('{value}')),
-        Field('non_including', formatter=TemplateFormatter('{value}'))
+        Field('included', formatter=TemplateFormatter('{value}')),
+        Field('non_included', formatter=TemplateFormatter('{value}'))
     )
 
-    def __init__(self, including: Optional[Iterable] = None, non_including: Optional[Iterable] = None):
-        self.including = including
-        self.non_including = non_including
+    def __init__(self, included: Optional[Iterable] = None, non_included: Optional[Iterable] = None):
+        self.included = included
+        self.non_included = non_included
 
     @property
-    def including(self) -> set | None:
-        return self._including
+    def included(self) -> set | None:
+        return self._included
 
-    @including.setter
-    def including(self, including: Iterable | None) -> None:
-        self._including = set(including) if including is not None else including
+    @included.setter
+    def included(self, included: Iterable | None) -> None:
+        self._included = set(included) if included is not None else included
 
     @property
-    def non_including(self) -> set | None:
-        return self._non_including
+    def non_included(self) -> set | None:
+        return self._non_included
 
-    @non_including.setter
-    def non_including(self, non_including: Iterable | None) -> None:
-        self._non_including = set(non_including) if non_including is not None else non_including
+    @non_included.setter
+    def non_included(self, non_included: Iterable | None) -> None:
+        self._non_included = set(non_included) if non_included is not None else non_included
 
     def __bool__(self) -> bool:
-        return bool(self.including or self.non_including)
+        return bool(self.included or self.non_included)
 
     def __contains__(self, item: any) -> bool:
         return (
-            (self.including is None or item in self.including)
-            and (self.non_including is None or item not in self.non_including)
+            (self.included is None or item in self.included)
+            and (self.non_included is None or item not in self.non_included)
         )
 
     def __eq__(self, other: Self) -> bool:
         return (
-            self.including == other.including
-            and self.non_including == other.non_including
+            self.included == other.included
+            and self.non_included == other.non_included
         )
 
     def __ne__(self, other: Self) -> bool:
@@ -76,17 +76,17 @@ class BinarySet(StylizedMixin):
         return self.__get_changed_by(set.__xor__, other)
 
     def __get_changed_by(self, manupulation_methdod: Callable[[set, set], set], other: Self) -> Self:
-        including = manupulation_methdod(
-            (self.including if self.including is not None else set()),
-            (other.including if other.including is not None else set())
+        included = manupulation_methdod(
+            (self.included if self.included is not None else set()),
+            (other.included if other.included is not None else set())
         )
 
-        non_including = manupulation_methdod(
-            (self.non_including if self.non_including is not None else set()),
-            (other.non_including if other.non_including is not None else set())
+        non_included = manupulation_methdod(
+            (self.non_included if self.non_included is not None else set()),
+            (other.non_included if other.non_included is not None else set())
         )
 
         return self.__class__(
-            including if self.including is not None and other.including is not None else None,
-            non_including if self.non_including is not None and other.non_including is not None else None
+            included if self.included is not None and other.included is not None else None,
+            non_included if self.non_included is not None and other.non_included is not None else None
         )

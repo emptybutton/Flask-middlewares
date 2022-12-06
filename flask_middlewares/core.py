@@ -105,8 +105,8 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         blueprint_set = self.default_blueprint_set & self.__get_set_from_raw_data(for_blueprints)
 
         blueprint_name_set = BinarySet(
-            self.__get_blueprint_name_from(blueprint_set.including),
-            self.__get_blueprint_name_from(blueprint_set.non_including)
+            self.__optional_get_blueprint_names_from(blueprint_set.included)
+            self.__optional_get_blueprint_names_from(blueprint_set.non_included)
         )
 
         for view_name, view_function in app.view_functions.items():
@@ -203,7 +203,7 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
                 default_blueprints = (use_for_blueprint, )
 
             elif isinstance(default_blueprints, BinarySet):
-                default_blueprints.including.add(use_for_blueprint)
+                default_blueprints.included.add(use_for_blueprint)
 
             elif isinstance(default_blueprints, Iterable):
                 default_blueprints = (*default_blueprints, use_for_blueprint)
