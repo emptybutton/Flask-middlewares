@@ -227,7 +227,6 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         environment but no one limits you.
         """
 
-
         global_middlewares = cls.__get_global_middlewares_from(config)
 
         if environment is not None:
