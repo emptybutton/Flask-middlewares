@@ -22,10 +22,10 @@ class IMiddleware(ABC):
 class Middleware(IMiddleware, ABC):
     def decorate(self, route: Callable) -> Callable:
         @wraps(route)
-        def body(*args, **kwargs) -> any:
+        def calling_proxy(*args, **kwargs) -> any:
             return self.call_route(route, *args, **kwargs)
 
-        return body
+        return calling_proxy
 
 
 class ProxyMiddleware(Middleware):
