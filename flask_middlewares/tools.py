@@ -48,6 +48,9 @@ class BinarySet(StylizedMixin):
     def __bool__(self) -> bool:
         return bool(self.included or self.non_included)
 
+    def __iter__(self) -> iter:
+        return iter(self.included if self.included is not None else set())
+
     def __contains__(self, item: any) -> bool:
         return (
             (self.included is None or item in self.included)
