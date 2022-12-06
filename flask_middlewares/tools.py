@@ -5,6 +5,8 @@ from flask import Response
 
 
 def get_status_code_from(response: any) -> int:
+    """Function to get code status from non-structural data."""
+
     if isinstance(response, Response):
         return response.status_code
     elif (
@@ -20,6 +22,13 @@ def get_status_code_from(response: any) -> int:
 
 
 class BinarySet(StylizedMixin):
+    """
+    Like set Class that explicitly stores entities that are not stored in it.
+
+    In the absence of any values, it considers that everything is present in it.
+    Iterable over the values included in the set.
+    """
+
     _repr_fields = (
         Field('included', formatter=TemplateFormatter('{value}')),
         Field('non_included', formatter=TemplateFormatter('{value}'))
