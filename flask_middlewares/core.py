@@ -10,16 +10,31 @@ from flask_middlewares.tools import BinarySet
 
 
 class IMiddleware(ABC):
+    """Middleware interface that dynamically decorates an endpoint function."""
+
     @abstractmethod
     def decorate(self, route: Callable) -> Callable:
-        pass
+        """
+        Method for getting a proxy that delegates the delegation to the
+        middleware from which this method was called.
+        """
 
     @abstractmethod
     def call_route(self, route: Callable, *args, **kwargs) -> any:
-        pass
+        """
+        Method of delegating the call of an input function with input arguments
+        with the execution of tasks.
+        """
 
 
 class Middleware(IMiddleware, ABC):
+    """
+    The abstract base class of middleware (See IMiddleware for more).
+
+    Implements decorating by creating a proxy function that calls the middleware
+    object on the initially decorated function.
+    """
+
     def decorate(self, route: Callable) -> Callable:
         @wraps(route)
         def calling_proxy(*args, **kwargs) -> any:
@@ -29,6 +44,8 @@ class Middleware(IMiddleware, ABC):
 
 
 class ProxyMiddleware(Middleware):
+    """Middleware class delegating delegation to other middlewares."""
+
     def __init__(self, middlewares: Iterable[IMiddleware]):
         self.middlewares = list(middlewares)
 
@@ -42,6 +59,8 @@ class ProxyMiddleware(Middleware):
 
 
 class IMiddlewareAppRegistrar(ABC):
+    """Registrar interface for middleware integration with Flask application."""
+
     @abstractmethod
     def init_app(
         self,
@@ -50,10 +69,24 @@ class IMiddlewareAppRegistrar(ABC):
         for_view_names: Iterable[str] = BinarySet(),
         for_blueprints: Iterable[str | Blueprint] = BinarySet()
     ) -> None:
-        pass
+        """
+        Method for integrating middlewares with input Flask application.
+
+        Accepts additional optional arguments:
+        * for_view_names - View function names to be integrated.
+
+        * for_blueprints - Blueprints whose view functions will be integrated.
+            Сan contain raw blueprint names.
+        """
 
 
 class ProxyMiddlewareAppRegistrar(IMiddlewareAppRegistrar):
+    """
+    MiddlewareAppRegistrar proxy class.
+
+    Used to call multiple registrars to one application.
+    """
+
     def __init__(self, registrars: Iterable[IMiddlewareAppRegistrar]):
         self.registrars = tuple(registrars)
 
@@ -69,6 +102,12 @@ class ProxyMiddlewareAppRegistrar(IMiddlewareAppRegistrar):
 
 
 class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
+    """
+    Class that implements middleware integration in a Flask application.
+
+    Can be created using config variables (See create_from_config class method).
+    """
+
     _proxy_middleware_factory: Callable[[Iterable[IMiddleware]], IMiddleware] = ProxyMiddleware
     _config_field_names: dict[str, str] = {
         'middlewares': 'MIDDLEWARES',
@@ -146,6 +185,49 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         is_environment_middlewares_higher: Optional[bool] = None,
         **kwargs
     ) -> Self:
+        """
+        Method for creating middleware registrar using config.
+
+        In keyword arguments, it accepts arguments that complement | overwriting
+        config data. Takes the name of the config variables from the
+        _config_field_names class attribute.
+
+        Meaning of config variables (Variable names are given by their key in
+        _config_field_names attribute and wrapped in {} brackets):
+
+        {middlewares} - main middlewares with which the registrar will be
+        initialized.
+
+        {default_view_names} - view names with which the registrar will be
+        initialized.
+
+        {default_blueprints} - blueprints with which the registrar will be
+        initialized.
+
+        {global_middlewares} - Additional middleware globally added to registrars,
+
+        {is_using_global} - Flag indicating the presence of middleware from
+        {global_middlewares}. DEFAULT True.
+
+        {is_global_middlewares_higher} - Flag denoting the locations of
+        middlewares from {global_middlewares} DEFAULT True.
+
+        {environments} - Dictionary in the format
+        [environment_name: str, config: dict] in the config where variables will
+        be searched except for {global_middlewares} which will be taken from the
+        original.
+
+        {is_environment_middlewares_higher} - Flag defining the position of ALL
+        (including global) middleware from the environment. DEFAULT False.
+
+        {use_for_blueprint} - When assigned, adds the blueprint from the value
+        of the variable to the default_blueprints attribute. Can be set to True
+        when in an environment, in which case it takes the name of the
+        environment as the blueprint name. It is better to use only in the
+        environment but no one limits you.
+        """
+
+
         global_middlewares = cls.__get_global_middlewares_from(config)
 
         if environment is not None:
@@ -249,6 +331,8 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
 
 
 class MiddlewareKeeper(ABC):
+    """Base middleware storage class."""
+
     _middleware_attribute_names: Iterable[str] = ('_internal_middlewares', )
     _proxy_middleware_factory: Callable[[Iterable[IMiddleware]], ProxyMiddleware] = ProxyMiddleware
 
@@ -262,9 +346,16 @@ class MiddlewareKeeper(ABC):
         return tuple(self._proxy_middleware.middlewares)
 
     def _update_middlewares(self) -> None:
+        """Method for creating | updating _proxy_middleware from attributes."""
+
         self._proxy_middleware = self._proxy_middleware_factory(tuple(self.__parse_middlewares()))
 
     def __parse_middlewares(self) -> list[IMiddleware]:
+        """
+        Middleware parsing method from attributes whose name is given in the
+        _middleware_attribute_names attribute.
+        """
+
         middlewares = list()
 
         for attribute_name in self._middleware_attribute_names:
