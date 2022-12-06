@@ -29,7 +29,7 @@ class Middleware(IMiddleware, ABC):
 
 
 class ProxyMiddleware(Middleware):
-    def __init__(self, middlewares: Iterable[Middleware]):
+    def __init__(self, middlewares: Iterable[IMiddleware]):
         self.middlewares = list(middlewares)
 
     def call_route(self, route: Callable, *args, **kwargs) -> any:
@@ -47,8 +47,8 @@ class IMiddlewareAppRegistrar(ABC):
         self,
         app: Flask,
         *,
-        for_view_names: Iterable[BinarySet | str] = BinarySet(),
-        for_blueprints: Iterable[BinarySet | str | Blueprint] = BinarySet()
+        for_view_names: Iterable[str] = BinarySet(),
+        for_blueprints: Iterable[str | Blueprint] = BinarySet()
     ) -> None:
         pass
 
@@ -61,15 +61,15 @@ class ProxyMiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         self,
         app: Flask,
         *,
-        for_view_names: Iterable[BinarySet | str] = BinarySet(),
-        for_blueprints: Iterable[BinarySet | str | Blueprint] = BinarySet()
+        for_view_names: Iterable[str] = BinarySet(),
+        for_blueprints: Iterable[str | Blueprint] = BinarySet()
     ) -> None:
         for registrar in self.registrars:
             registrar.init_app(app, for_view_names=for_view_names, for_blueprints=for_blueprints)
 
 
 class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
-    _proxy_middleware_factory: Callable[[Iterable[Middleware]], Middleware] = ProxyMiddleware
+    _proxy_middleware_factory: Callable[[Iterable[IMiddleware]], IMiddleware] = ProxyMiddleware
     _config_field_names: dict[str, str] = {
         'middlewares': 'MIDDLEWARES',
         'global_middlewares': 'GLOBAL_MIDDLEWARES',
@@ -84,10 +84,10 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
 
     def __init__(
         self,
-        middlewares: Iterable[Middleware],
+        middlewares: Iterable[IMiddleware],
         *,
-        default_view_names: Optional[Iterable[str] | BinarySet] = None,
-        default_blueprints: Optional[Iterable[str | Blueprint] | BinarySet] = None
+        default_view_names: Iterable[str] = BinarySet(),
+        default_blueprints: Iterable[str | Blueprint] = BinarySet()
     ):
         self.middleware = self._proxy_middleware_factory(middlewares)
 
@@ -114,8 +114,8 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         self,
         app: Flask,
         *,
-        for_view_names: Iterable[BinarySet | str] = BinarySet(),
-        for_blueprints: Iterable[BinarySet | str | Blueprint] = BinarySet(),
+        for_view_names: Iterable[str] = BinarySet(),
+        for_blueprints: Iterable[str | Blueprint] = BinarySet(),
     ) -> None:
         view_name_set = self.default_view_name_set & self.__get_binary_set_from_raw_data(for_view_names)
         blueprint_set = self.default_blueprint_set & self.__get_binary_set_from_raw_data(for_blueprints)
@@ -244,13 +244,13 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         ) if blueprints is not None else blueprints
 
     @classmethod
-    def __get_global_middlewares_from(cls, config: dict[str, Iterable[Middleware]]) -> tuple[Middleware]:
+    def __get_global_middlewares_from(cls, config: dict[str, Iterable[IMiddleware]]) -> tuple[IMiddleware]:
         return tuple(config.get(cls._config_field_names['global_middlewares'], tuple()))
 
 
 class MiddlewareKeeper(ABC):
     _middleware_attribute_names: Iterable[str] = ('_internal_middlewares', )
-    _proxy_middleware_factory: Callable[[Iterable[Middleware]], ProxyMiddleware] = ProxyMiddleware
+    _proxy_middleware_factory: Callable[[Iterable[IMiddleware]], ProxyMiddleware] = ProxyMiddleware
 
     _proxy_middleware: Optional[ProxyMiddleware]
 
@@ -258,13 +258,13 @@ class MiddlewareKeeper(ABC):
         self._update_middlewares()
 
     @property
-    def _middlewares(self) -> Middleware:
+    def _middlewares(self) -> tuple[IMiddleware]:
         return tuple(self._proxy_middleware.middlewares)
 
     def _update_middlewares(self) -> None:
         self._proxy_middleware = self._proxy_middleware_factory(tuple(self.__parse_middlewares()))
 
-    def __parse_middlewares(self) -> list[Middleware]:
+    def __parse_middlewares(self) -> list[IMiddleware]:
         middlewares = list()
 
         for attribute_name in self._middleware_attribute_names:
