@@ -5,6 +5,11 @@ from flask_middlewares.tools import get_status_code_from
 
 
 class AbortBadStatusCodeMiddleware(Middleware):
+    """
+    Middleware class that implements the abort of the \"bad\" status code exiting
+    the router.
+    """
+
     def call_route(self, route: Callable, *args, **kwargs) -> any:
         response = route(*args, **kwargs)
 
@@ -17,6 +22,19 @@ class AbortBadStatusCodeMiddleware(Middleware):
 
 
 class StatusCodeRedirectorMiddleware(Middleware):
+    """
+    Middleware class that implements a redirect to some endpoint by some values
+    of a status code of Flask Response returned from the router.
+
+    Specifies the URL of the endpoint by the redirect_resource attribute, which
+    can represent both the URL itself and the name of the view function
+    processed by this URL.
+
+    Defines the transition on the status codes of the response corresponding to
+    the value / values of the status codes contained in the status_codes
+    attribute.
+    """
+
     def __init__(self, redirect_resource: str, status_codes: Iterable[int] | int):
         self.redirect_resource = redirect_resource
         self.status_codes = (
@@ -27,6 +45,8 @@ class StatusCodeRedirectorMiddleware(Middleware):
 
     @property
     def redirect_url(self) -> str:
+        """Structural endpoint property for redirection."""
+
         try:
             return url_for(self.redirect_resource)
         except BuildError:
