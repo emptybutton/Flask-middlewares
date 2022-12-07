@@ -78,10 +78,18 @@ class IMiddlewareAppRegistrar(ABC):
             Сan contain raw blueprint names.
         """
 
+    @classmethod
+    @abstractmethod
+    def create_from_config(cls, config: dict, *args, **kwargs) -> Self:
+        """
+        Method for creating middleware registrar using config.
 
 class ProxyMiddlewareAppRegistrar(IMiddlewareAppRegistrar):
     """
     MiddlewareAppRegistrar proxy class.
+        In keyword arguments, it accepts arguments that complement | overwriting
+        config data.
+        """
 
     Used to call multiple registrars to one application.
     """
