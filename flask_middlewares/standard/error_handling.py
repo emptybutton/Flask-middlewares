@@ -95,7 +95,7 @@ class ErrorJSONResponseFormatter(ErrorHandler, ABC):
 class TemplatedErrorJSONResponseFormatter(ErrorJSONResponseFormatter, ABC):
     """Implementation class of ErrorJSONResponseFormatter."""
 
-    def __init__(self, is_format_message: bool = True, is_format_type: bool = False):
+    def __init__(self, is_format_message: bool = True, is_format_type: bool = True):
         self.is_format_message = is_format_message
         self.is_format_type = is_format_type
 
