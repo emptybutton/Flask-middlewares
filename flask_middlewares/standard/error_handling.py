@@ -74,7 +74,7 @@ class ErrorHandler(IErrorHandler, ABC):
         """Method that implements direct handling of a specific error."""
 
 
-class ErrorJSONResponseFormatter(ErrorHandler, ABC):
+class JSONResponseErrorFormatter(ErrorHandler, ABC):
     """ErrorHandler class that handles errors with a JSON Response as a result."""
 
     def _handle_error(self, error: Exception) -> any:
@@ -92,8 +92,8 @@ class ErrorJSONResponseFormatter(ErrorHandler, ABC):
         """Method for getting status code for response by the input error."""
 
 
-class TemplatedErrorJSONResponseFormatter(ErrorJSONResponseFormatter, ABC):
-    """Implementation class of ErrorJSONResponseFormatter."""
+class JSONResponseTemplatedErrorFormatter(JSONResponseErrorFormatter, ABC):
+    """Implementation class of JSONResponseErrorFormatter."""
 
     def __init__(self, is_format_message: bool = True, is_format_type: bool = True):
         self.is_format_message = is_format_message
