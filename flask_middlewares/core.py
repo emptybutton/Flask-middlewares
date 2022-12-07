@@ -106,6 +106,17 @@ class ProxyMiddlewareAppRegistrar(IMiddlewareAppRegistrar):
     ) -> None:
         for registrar in self.registrars:
             registrar.init_app(app, for_view_names=for_view_names, for_blueprints=for_blueprints)
+FLASK_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
+    'middlewares': 'MIDDLEWARES',
+    'global_middlewares': 'GLOBAL_MIDDLEWARES',
+    'environments': 'MIDDLEWARE_ENVIRONMENTS',
+    'default_view_names': 'MIDDLEWARE_VIEW_NAMES',
+    'default_blueprints': 'MIDDLEWARE_BLUEPRINTS',
+    'is_using_global': 'USE_GLOBAL_MIDDLEWARES',
+    'use_for_blueprint': 'USE_FOR_BLUEPRINT',
+    'is_global_middlewares_higher': 'IS_GLOBAL_MIDDLEWARES_HIGHER',
+    'is_environment_middlewares_higher': 'IS_ENVIRONMENT_MIDDLEWARES_HIGHER',
+}
 
 
 class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
@@ -116,17 +127,7 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
     """
 
     _proxy_middleware_factory: Callable[[Iterable[IMiddleware]], IMiddleware] = ProxyMiddleware
-    _config_field_names: dict[str, str] = {
-        'middlewares': 'MIDDLEWARES',
-        'global_middlewares': 'GLOBAL_MIDDLEWARES',
-        'environments': 'MIDDLEWARE_ENVIRONMENTS',
-        'default_view_names': 'MIDDLEWARE_VIEW_NAMES',
-        'default_blueprints': 'MIDDLEWARE_BLUEPRINTS',
-        'is_using_global': 'USE_GLOBAL_MIDDLEWARES',
-        'use_for_blueprint': 'USE_FOR_BLUEPRINT',
-        'is_global_middlewares_higher': 'IS_GLOBAL_MIDDLEWARES_HIGHER',
-        'is_environment_middlewares_higher': 'IS_ENVIRONMENT_MIDDLEWARES_HIGHER'
-    }
+    _config_field_names: dict[str, str] = FLASK_APP_CONFIG_FIELD_NAMES
 
     def __init__(
         self,
