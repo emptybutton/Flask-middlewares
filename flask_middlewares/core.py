@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import Callable, Optional, Iterable, Self
-
 from functools import wraps, partial
 
 from flask import Flask, Blueprint
