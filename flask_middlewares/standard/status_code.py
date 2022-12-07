@@ -35,7 +35,7 @@ class StatusCodeRedirectorMiddleware(Middleware):
     attribute.
     """
 
-    def __init__(self, redirect_resource: str, status_codes: Iterable[int] | int):
+    def __init__(self, redirect_resource: str, status_codes: Iterable[int] | int = (301, 302)):
         self.redirect_resource = redirect_resource
         self.status_codes = (
             tuple(status_codes)
