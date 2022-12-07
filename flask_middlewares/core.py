@@ -28,7 +28,7 @@ class IMiddleware(ABC):
 
 class Middleware(IMiddleware, ABC):
     """
-    The abstract base class of middleware (See IMiddleware for more).
+    The abstract base class of middleware (See IMiddleware for more information).
 
     Implements decorating by creating a proxy function that calls the middleware
     object on the initially decorated function.
@@ -225,7 +225,7 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
 
         {global_middlewares} - Additional middleware globally added to registrars,
 
-        {is_using_global} - Flag indicating the presence of middleware from
+        {is_using_global} - Flag indicating the presence of middlewares from
         {global_middlewares}. DEFAULT True.
 
         {is_global_middlewares_higher} - Flag denoting the locations of
@@ -237,7 +237,7 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         original.
 
         {is_environment_middlewares_higher} - Flag defining the position of ALL
-        (including global) middleware from the environment. DEFAULT False.
+        (including global) middlewares from the environment. DEFAULT False.
 
         {use_for_blueprint} - When assigned, adds the blueprint from the value
         of the variable to the default_blueprints attribute. Can be set to True
