@@ -144,6 +144,18 @@ class TypeErrorHandler(ErrorHandler, ABC):
         )
 
 
+class DefaultJSONResponseErrorFormatter(JSONResponseTemplatedErrorFormatter, TypeErrorHandler):
+    """
+    Class that handles all errors that have arisen in the form of a JSON
+    response.
+    """
+
+    _correct_error_types_to_handle = (Exception, )
+
+    def _get_status_code_from(self, error: Exception) -> int:
+        return 500
+
+
 class ErrorMiddleware(Middleware, ABC):
     """Middleware class that handles errors that occurred in routers."""
 
