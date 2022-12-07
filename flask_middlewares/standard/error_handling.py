@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from typing import Iterable, Self, Callable
 from functools import cached_property
 
+from flask import jsonify
+
 from flask_middlewares import Middleware
 
 
