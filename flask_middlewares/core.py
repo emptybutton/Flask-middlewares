@@ -164,18 +164,23 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         for_view_names: Iterable[str] = BinarySet(),
         for_blueprints: Iterable[str | Blueprint] = BinarySet(),
     ) -> None:
-        view_name_set = self.default_view_name_set & self.__get_binary_set_from_raw_data(for_view_names)
-        blueprint_set = self.default_blueprint_set & self.__get_binary_set_from_raw_data(for_blueprints)
+        view_names = self.default_view_name_set | self.__get_binary_set_from_raw_data(for_view_names)
+        blueprint_names = self.default_blueprint_set | self.__get_binary_set_from_raw_data(for_blueprints)
 
-        blueprint_name_set = BinarySet(
-            self.__optional_get_blueprint_names_from(blueprint_set.included),
-            self.__optional_get_blueprint_names_from(blueprint_set.non_included)
+        blueprint_names = BinarySet(
+            self.__optional_get_blueprint_names_from(blueprint_names.included),
+            self.__optional_get_blueprint_names_from(blueprint_names.non_included)
         )
 
         for view_name, view_function in app.view_functions.items():
-            if view_name in view_name_set and any(
-                view_blueprint_name in blueprint_name_set
-                for view_blueprint_name in view_name.split('.')[:-1]
+            view_blueprint_names = view_name.split('.')[:-1]
+
+            if (
+                and view_name in view_names
+                and (not view_blueprint_names and not blueprint_names or any(
+                    view_blueprint_name in blueprint_names
+                    for view_blueprint_name in view_blueprint_names
+                ))
             ):
                 app.view_functions[view_name] = self.middleware.decorate(view_function)
 
