@@ -302,7 +302,7 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
 
         if use_for_blueprint is not None:
             if isinstance(use_for_blueprint, bool) and use_for_blueprint:
-                if environment is not None:
+                if environment is None:
                     raise MiddlewareRegistrarConfigError(
                         "There is no implicit reference to the blueprint"
                     )
