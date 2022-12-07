@@ -340,6 +340,9 @@ class ProxyMiddlewareAppRegistrar(IMiddlewareAppRegistrar):
 
     Used to call multiple registrars to one application.
     """
+
+    _config_field_names: dict[str, str] = FLASK_APP_CONFIG_FIELD_NAMES
+
     def __init__(self, registrars: Iterable[IMiddlewareAppRegistrar]):
         self.registrars = tuple(registrars)
 
@@ -352,6 +355,31 @@ class ProxyMiddlewareAppRegistrar(IMiddlewareAppRegistrar):
     ) -> None:
         for registrar in self.registrars:
             registrar.init_app(app, for_view_names=for_view_names, for_blueprints=for_blueprints)
+
+    @classmethod
+    def create_from_config(
+        cls,
+        config: dict,
+        *args,
+        registrar_factory: Callable[[dict], IMiddlewareAppRegistrar] = MiddlewareAppRegistrar.create_from_config,
+        is_root_registrar_creating: bool = True,
+        environment: None = None,
+        **kwargs
+    ) -> Self:
+        environment_arguments = set(config.get(
+            cls._config_field_names['environments'],
+            tuple()
+        ).keys())
+
+        if is_root_registrar_creating:
+            environment_arguments.add(None)
+
+        return cls(
+            registrar_factory(config, *args, environment=environment_argument, **kwargs)
+            for environment_argument in environment_arguments
+        )
+
+
 class MiddlewareKeeper(ABC):
     """Base middleware storage class."""
 
