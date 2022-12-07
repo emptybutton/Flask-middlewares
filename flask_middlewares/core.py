@@ -116,6 +116,7 @@ FLASK_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
     'use_for_blueprint': 'USE_FOR_BLUEPRINT',
     'is_global_middlewares_higher': 'IS_GLOBAL_MIDDLEWARES_HIGHER',
     'is_environment_middlewares_higher': 'IS_ENVIRONMENT_MIDDLEWARES_HIGHER',
+    'is_apply_static': 'IS_APPLY_STATIC'
 }
 
 
@@ -134,12 +135,15 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         middlewares: Iterable[IMiddleware],
         *,
         default_view_names: Iterable[str] = BinarySet(),
-        default_blueprints: Iterable[str | Blueprint] = BinarySet()
+        default_blueprints: Iterable[str | Blueprint] = BinarySet(),
+        is_apply_static: bool = False
     ):
         self.middleware = self._proxy_middleware_factory(middlewares)
 
         self.default_view_name_set = default_view_names
         self.default_blueprint_set = default_blueprints
+
+        self.is_apply_static = is_apply_static
 
     @property
     def default_view_name_set(self) -> BinarySet:
@@ -176,6 +180,7 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
             view_blueprint_names = view_name.split('.')[:-1]
 
             if (
+                (view_name != 'static' or self.is_apply_static)
                 and view_name in view_names
                 and (not view_blueprint_names and not blueprint_names or any(
                     view_blueprint_name in blueprint_names
@@ -196,6 +201,7 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         use_for_blueprint: Optional[bool | str | Blueprint] = None,
         is_global_middlewares_higher: Optional[bool] = None,
         is_environment_middlewares_higher: Optional[bool] = None,
+        is_apply_static: Optional[bool] = None,
         **kwargs
     ) -> Self:
         """
@@ -317,6 +323,9 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
 
             elif isinstance(default_blueprints, Iterable):
                 default_blueprints = (*default_blueprints, use_for_blueprint)
+
+        if is_apply_static is not None:
+            kwargs['is_apply_static'] = is_apply_static
 
         return cls(
             middlewares,
