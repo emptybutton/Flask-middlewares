@@ -93,6 +93,7 @@ class TypeErrorHandler(ErrorHandler, ABC):
             for correct_error_type in self._correct_error_types_to_handle
         )
 
+
 class ErrorMiddleware(Middleware, ABC):
     def call_route(self, route: Callable, *args, **kwargs) -> any:
         try:
