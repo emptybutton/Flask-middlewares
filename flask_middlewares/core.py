@@ -260,9 +260,9 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
             else:
                 global_middlewares += environment_global_middlewares
      
-        middlewares = config.get(cls._config_field_names['middlewares'])
+        middlewares = config.get(cls._config_field_names['middlewares'], tuple())
 
-        if middlewares is None and not global_middlewares:
+        if not middlewares and not global_middlewares:
             raise MiddlewareRegistrarConfigError(
                 "{config_name} doesn't have any available middlewares".format(
                     config_name=(
