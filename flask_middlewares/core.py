@@ -160,7 +160,7 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         blueprint_set = self.default_blueprint_set & self.__get_binary_set_from_raw_data(for_blueprints)
 
         blueprint_name_set = BinarySet(
-            self.__optional_get_blueprint_names_from(blueprint_set.included)
+            self.__optional_get_blueprint_names_from(blueprint_set.included),
             self.__optional_get_blueprint_names_from(blueprint_set.non_included)
         )
 
