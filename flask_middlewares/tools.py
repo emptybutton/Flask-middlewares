@@ -14,7 +14,6 @@ def get_status_code_from(response: any) -> int:
         and len(response) >= 2
         and isinstance(response[1], int | float)
         and int(response[1]) == response[1]
-        and 400 <= response[1] <= 500
     ):
         return response[1]
     else:
