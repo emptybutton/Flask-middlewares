@@ -47,7 +47,7 @@ class ErrorHandler(IErrorHandler, ABC):
 class ErrorJSONResponseFormatter(ErrorHandler, ABC):
     def _handle_error(self, error: Exception) -> any:
         response = jsonify(self._get_response_body_from(error))
-        response.status_code = jsonify(self._get_status_code_from(error))
+        response.status_code = self._get_status_code_from(error)
 
         return response
 
