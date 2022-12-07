@@ -98,6 +98,6 @@ class BinarySet(StylizedMixin):
         )
 
         return self.__class__(
-            included if self.included is not None and other.included is not None else None,
-            non_included if self.non_included is not None and other.non_included is not None else None
+            included if self.included is not None or other.included is not None else None,
+            non_included if self.non_included is not None or other.non_included is not None else None
         )
