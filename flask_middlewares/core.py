@@ -295,12 +295,12 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
             default_blueprints = config.get(cls._config_field_names['default_blueprints'])
 
         use_for_blueprint = (
-            config.get(cls._config_field_names['use_for_blueprint'], False)
+            config.get(cls._config_field_names['use_for_blueprint'])
             if use_for_blueprint is None
             else use_for_blueprint
         )
 
-        if use_for_blueprint:
+        if use_for_blueprint is not None:
             if isinstance(use_for_blueprint, bool) and use_for_blueprint:
                 if environment is not None:
                     raise MiddlewareRegistrarConfigError(
