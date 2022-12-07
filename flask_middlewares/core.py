@@ -84,28 +84,11 @@ class IMiddlewareAppRegistrar(ABC):
         """
         Method for creating middleware registrar using config.
 
-class ProxyMiddlewareAppRegistrar(IMiddlewareAppRegistrar):
-    """
-    MiddlewareAppRegistrar proxy class.
         In keyword arguments, it accepts arguments that complement | overwriting
         config data.
         """
 
-    Used to call multiple registrars to one application.
-    """
 
-    def __init__(self, registrars: Iterable[IMiddlewareAppRegistrar]):
-        self.registrars = tuple(registrars)
-
-    def init_app(
-        self,
-        app: Flask,
-        *,
-        for_view_names: Iterable[str] = BinarySet(),
-        for_blueprints: Iterable[str | Blueprint] = BinarySet()
-    ) -> None:
-        for registrar in self.registrars:
-            registrar.init_app(app, for_view_names=for_view_names, for_blueprints=for_blueprints)
 FLASK_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
     'middlewares': 'MIDDLEWARES',
     'global_middlewares': 'GLOBAL_MIDDLEWARES',
@@ -351,6 +334,24 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         return tuple(config.get(cls._config_field_names['global_middlewares'], tuple()))
 
 
+class ProxyMiddlewareAppRegistrar(IMiddlewareAppRegistrar):
+    """
+    MiddlewareAppRegistrar proxy class.
+
+    Used to call multiple registrars to one application.
+    """
+    def __init__(self, registrars: Iterable[IMiddlewareAppRegistrar]):
+        self.registrars = tuple(registrars)
+
+    def init_app(
+        self,
+        app: Flask,
+        *,
+        for_view_names: Iterable[str] = BinarySet(),
+        for_blueprints: Iterable[str | Blueprint] = BinarySet()
+    ) -> None:
+        for registrar in self.registrars:
+            registrar.init_app(app, for_view_names=for_view_names, for_blueprints=for_blueprints)
 class MiddlewareKeeper(ABC):
     """Base middleware storage class."""
 
