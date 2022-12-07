@@ -23,8 +23,8 @@ class ProxyErrorHandler(IErrorHandler):
                 return result
 
     @classmethod
-    def create_factory_decorator(cls, *args, **kwargs) -> Self:
-        def factory_decorator(func: Callable) -> any:
+    def create_factory_decorator(cls, *args, **kwargs) -> Callable[[Callable], Self]:
+        def factory_decorator(func: Callable) -> Self:
             return cls((func, ), *args, **kwargs)
 
         return factory_decorator
@@ -52,8 +52,8 @@ class ErrorJSONResponseFormatter(ErrorHandler, ABC):
         return response
 
     @abstractmethod
-    def _get_response_body_from(self, error: Exception) -> dict:
         pass
+    def _get_response_body_from(self, error: Exception) -> dict | Iterable:
 
     @abstractmethod
     def _get_status_code_from(self, error: Exception) -> int:
