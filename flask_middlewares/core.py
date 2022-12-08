@@ -227,6 +227,10 @@ class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
         when in an environment, in which case it takes the name of the
         environment as the blueprint name. It is better to use only in the
         environment but no one limits you.
+
+        {is_apply_static} - Specifies the application to the \"system\" flask
+        view getting static resources. DEFAULT False. It's better not to turn it
+        on if you don't know what you are doing.
         """
 
         global_middlewares = cls.__get_global_middlewares_from(config)
