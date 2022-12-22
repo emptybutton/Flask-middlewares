@@ -403,9 +403,9 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
 
 class MiddlewareKeeper(ABC):
     """Base middleware storage class."""
+    _middleware_attribute_names: Iterable[str] = ('_default_middlewares', )
     _is_strict_to_middleware_attribute_parsing: bool = False
 
-    _middleware_attribute_names: Iterable[str] = ('_internal_middlewares', )
     _proxy_middleware_factory: Callable[[Iterable[IMiddleware]], ProxyMiddleware] = ProxyMiddleware
 
     _proxy_middleware: Optional[ProxyMiddleware]
