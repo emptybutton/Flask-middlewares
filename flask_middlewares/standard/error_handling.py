@@ -26,9 +26,18 @@ class ProxyErrorHandler(IErrorHandler):
     breaking the loop for other handlers.
     """
 
-    def __init__(self, error_handlers: Iterable[IErrorHandler], *, is_return_delegated: bool = True):
-        self.error_handlers = tuple(error_handlers)
+    def __init__(
+        self,
+        error_handlers: Iterable[IErrorHandler] | IErrorHandler,
+        *,
+        is_return_delegated: bool = True
+    ):
         self.is_return_delegated = is_return_delegated
+        self.error_handlers = (
+            tuple(error_handlers)
+            if isinstance(error_handlers, Iterable)
+            else (error_handlers, )
+        )
 
     def __call__(self, error: Exception) -> any:
         for error_handler in self.error_handlers:
