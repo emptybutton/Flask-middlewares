@@ -410,7 +410,7 @@ class MiddlewareKeeper(ABC):
     _proxy_middleware: Optional[ProxyMiddleware]
 
     def __init__(self):
-        self._update_middlewares()
+        self._update_proxy_middleware()
 
     @property
     def _middlewares(self) -> Iterable[IMiddleware]:
@@ -420,12 +420,12 @@ class MiddlewareKeeper(ABC):
     def _middlewares(self, middlewares: Iterable[IMiddleware]) -> None:
         self._proxy_middleware.middlewares = middlewares
 
-    def _update_middlewares(self) -> None:
+    def _update_proxy_middleware(self) -> None:
         """Method for creating | updating _proxy_middleware from attributes."""
 
-        self._proxy_middleware = self._proxy_middleware_factory(tuple(self.__parse_middlewares()))
+        self._proxy_middleware = self._proxy_middleware_factory(tuple(self.__get_parsed_middlewares()))
 
-    def __parse_middlewares(self) -> list[IMiddleware]:
+    def __get_parsed_middlewares(self) -> list[IMiddleware]:
         """
         Middleware parsing method from attributes whose name is given in the
         _middleware_attribute_names attribute.
