@@ -108,39 +108,53 @@ class ErrorHandler(IErrorHandler, ABC):
         """Method that implements direct handling of a specific error."""
 
 
-class JSONResponseErrorFormatter(ErrorHandler, ABC):
-    """ErrorHandler class that handles errors with a JSON Response as a result."""
+class JSONResponseFormatter(ABC):
+    """Class that handles objects with a JSON Response as a result."""
+
+    def __init__(
+        self,
+        *,
+        response_factory: Callable[[dict, int], any] = create_json_response_by,
+        status_code_parser: Callable[[Exception], int] = lambda error: 200
+    ):
+        self.response_factory = response_factory
+        self.status_code_parser = status_code_parser
 
     def _handle_error(self, error: Exception) -> any:
-        response = jsonify(self._get_response_body_from(error))
-        response.status_code = self._get_status_code_from(error)
-
-        return response
+        return self.response_factory(
+            self._get_response_body_from(error),
+            self.status_code_parser(error)
+        )
 
     @abstractmethod
     def _get_response_body_from(self, error: Exception) -> dict | Iterable:
         """Method for getting serialazable body for JSON response by input error."""
 
-    @abstractmethod
-    def _get_status_code_from(self, error: Exception) -> int:
-        """Method for getting status code for response by the input error."""
 
-
-class JSONResponseTemplatedErrorFormatter(JSONResponseErrorFormatter, ABC):
+class JSONResponseTemplatedErrorFormatter(JSONResponseFormatter):
     """Implementation class of JSONResponseErrorFormatter."""
 
-    _is_format_message: bool = True
-    _is_format_type: bool = True
+    def __init__(
+        self,
+        *,
+        response_factory: Callable[[dict, int], any] = create_json_response_by,
+        status_code_parser: Callable[[Exception], int] = lambda error: 200,
+        is_format_message: bool = True,
+        is_format_type: bool = True
+    ):
+        super().__init__(response_factory=response_factory, status_code_parser=status_code_parser)
+        self.is_format_message = is_format_message
+        self.is_format_type = is_format_type
 
     def _get_response_body_from(self, error: Exception) -> dict:
         """Method for getting a message on an error."""
 
         response_body = dict()
 
-        if self._is_format_message:
+        if self.is_format_message:
             response_body['message'] = self._get_error_message_from(error)
 
-        if self._is_format_type:
+        if self.is_format_type:
             response_body['error-type'] = self._get_error_type_name_from(error)
 
         return response_body
