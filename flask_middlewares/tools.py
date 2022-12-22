@@ -152,3 +152,10 @@ def redirect_by(url_resource: str) -> Response:
         url_resource = url_resource
 
     return redirect(url_resource)
+
+
+def create_json_response_with(payload: dict, status_code: int = 200) -> Response:
+    response = jsonify(payload)
+    response.status_code = self._get_status_code_from(error)
+
+    return response
