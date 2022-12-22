@@ -121,12 +121,20 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         default_blueprints: Iterable[str | Blueprint] = BinarySet(),
         is_apply_static: bool = False
     ):
-        self.middleware = self._proxy_middleware_factory(middlewares)
+        self.proxy_middleware = self._proxy_middleware_factory(middlewares)
 
         self.default_view_name_set = default_view_names
         self.default_blueprint_set = default_blueprints
 
         self.is_apply_static = is_apply_static
+
+    @property
+    def middlewares(self) -> Iterable[IMiddleware]:
+        return self.proxy_middleware.middlewares
+
+    @middlewares.setter
+    def middlewares(self, middlewares: Iterable[IMiddleware]) -> None:
+        self.proxy_middleware.middlewares = middlewares
 
     @property
     def default_view_name_set(self) -> BinarySet:
@@ -170,7 +178,7 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
                     for view_blueprint_name in view_blueprint_names
                 ))
             ):
-                app.view_functions[view_name] = self.middleware.decorate(view_function)
+                app.view_functions[view_name] = self.proxy_middleware.decorate(view_function)
 
     @classmethod
     def create_from_config(
