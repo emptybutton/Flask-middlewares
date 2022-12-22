@@ -66,6 +66,29 @@ class ProxyErrorHandler(IErrorHandler):
         return factory_decorator
 
 
+class ErrorHandlerAllower(ProxyErrorHandler):
+    """
+    ProxyErrorHandler class that disables its middlewares under certain 
+    conditions.
+
+    Delegates the definition of middlewares to determinant.
+    """
+
+    def __init__(
+        self,
+        error_handlers: Iterable[IErrorHandler] | IErrorHandler,
+        determinant: Callable[[Exception], bool],
+        *,
+        is_return_delegated: bool = True
+    ):
+        super().__init__(error_handlers, is_return_delegated=is_return_delegated)
+        self.determinant = determinant
+
+    def __call__(self, error: Exception) -> any:
+        if self.determinant(error):
+            return super().__call__(error)
+
+
 class ErrorHandler(IErrorHandler, ABC):
     """
     Class with safe implementation of ErrorHandler interface.
