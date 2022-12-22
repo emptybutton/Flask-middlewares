@@ -416,6 +416,10 @@ class MiddlewareKeeper(ABC):
     def _middlewares(self) -> tuple[IMiddleware]:
         return tuple(self._proxy_middleware.middlewares)
 
+    @_middlewares.setter
+    def _middlewares(self, middlewares: Iterable[IMiddleware]) -> None:
+        self._proxy_middleware.middlewares = middlewares
+
     def _update_middlewares(self) -> None:
         """Method for creating | updating _proxy_middleware from attributes."""
 
