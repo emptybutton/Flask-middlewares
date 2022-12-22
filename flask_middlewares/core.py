@@ -403,6 +403,7 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
 
 class MiddlewareKeeper(ABC):
     """Base middleware storage class."""
+    _is_strict_to_middleware_attribute_parsing: bool = False
 
     _middleware_attribute_names: Iterable[str] = ('_internal_middlewares', )
     _proxy_middleware_factory: Callable[[Iterable[IMiddleware]], ProxyMiddleware] = ProxyMiddleware
@@ -434,7 +435,10 @@ class MiddlewareKeeper(ABC):
         middlewares = list()
 
         for attribute_name in self._middleware_attribute_names:
-            if not hasattr(self, attribute_name):
+            if (
+                not hasattr(self, attribute_name)
+                and not self._is_strict_to_middleware_attribute_parsing
+            ):
                 continue
 
             attribute_value = getattr(self, attribute_name)
