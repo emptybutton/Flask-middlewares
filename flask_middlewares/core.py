@@ -402,7 +402,18 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
 
 
 class MiddlewareKeeper(ABC):
-    """Base middleware storage class."""
+    """
+    Base middleware storage class.
+
+    Stores middleware as a proxy that it delegates when accessing middleware.
+    When updating (and initializing) the proxy parses the middlewares from the
+    _middleware_attribute_names attributes.
+
+    Not strict on missing middleware attributes, which can be changed by setting
+    `_is_strict_to_middleware_attribute_parsing = True`.
+    Parses iterable attributes as attribute items.
+    """
+
     _middleware_attribute_names: Iterable[str] = ('_default_middlewares', )
     _is_strict_to_middleware_attribute_parsing: bool = False
 
