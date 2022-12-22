@@ -1,10 +1,9 @@
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Container
 
-from flask import redirect, url_for
-from werkzeug.routing import BuildError
+from flask import abort
 
 from flask_middlewares import Middleware
-from flask_middlewares.tools import get_status_code_from
+from flask_middlewares.tools import get_status_code_from, redirect_by
 
 
 class StatusCodeAbortingMiddleware(Middleware):
@@ -38,7 +37,7 @@ class StatusCodeAbortingMiddleware(Middleware):
 class StatusCodeRedirectorMiddleware(Middleware):
     """
     Middleware class that implements a redirect to some endpoint by some values
-    of a status code of Flask Response returned from the router.
+    of a status code of a response returned from the router.
 
     Specifies the URL of the endpoint by the redirect_resource attribute, which
     can represent both the URL itself and the name of the view function
@@ -49,28 +48,29 @@ class StatusCodeRedirectorMiddleware(Middleware):
     attribute.
     """
 
-    def __init__(self, redirect_resource: str, status_codes: Iterable[int] | int = (301, 302)):
-        self.redirect_resource = redirect_resource
+    def __init__(
+        self,
+        redirect_url: str,
+        status_code_resource: Container[int] | int,
+        *,
+        status_code_parser: Callable[[any], int] = get_status_code_from,
+        url_redirector: Callable[[str], any] = redirect_by,
+    ):
+        self.status_code_parser = status_code_parser
+        self.url_redirector = url_redirector
+
+        self.redirect_url = redirect_url
         self.status_codes = (
-            tuple(status_codes)
-            if isinstance(status_codes, Iterable)
-            else (status_codes, )
+            status_code_resource
+            if isinstance(status_code_resource, Container)
+            else (status_code_resource, )
         )
-
-    @property
-    def redirect_url(self) -> str:
-        """Structural endpoint property for redirection."""
-
-        try:
-            return url_for(self.redirect_resource)
-        except BuildError:
-            return self.redirect_resource
 
     def call_route(self, route: Callable, *args, **kwargs) -> any:
         response = route(*args, **kwargs)
 
         return (
-            redirect(self.redirect_url)
-            if get_status_code_from(response) in self.status_codes
+            self.url_redirector(self.redirect_url)
+            if self.status_code_parser(response) in self.status_codes
             else response
         )
