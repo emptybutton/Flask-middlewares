@@ -1,7 +1,8 @@
 from typing import Iterable, Optional, Self, Callable
 
 from beautiful_repr import StylizedMixin, Field, TemplateFormatter
-from flask import Response
+from flask import Response, Config, url_for, redirect
+from werkzeug.routing import BuildError
 
 
 def get_status_code_from(response: any) -> int:
@@ -143,3 +144,11 @@ def parse_config_from(
 
     return config
 
+
+def redirect_by(url_resource: str) -> Response:
+    try:
+        url_resource = url_for(url_resource)
+    except BuildError:
+        url_resource = url_resource
+
+    return redirect(url_resource)
