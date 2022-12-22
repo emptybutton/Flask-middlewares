@@ -7,21 +7,32 @@ from flask_middlewares import Middleware
 from flask_middlewares.tools import get_status_code_from
 
 
-class AbortBadStatusCodeMiddleware(Middleware):
+class StatusCodeAbortingMiddleware(Middleware):
     """
-    Middleware class that implements the abort of the \"bad\" status code exiting
-    the router.
+    Middleware class that implements the abort of some status code (by default
+    it's 400 ~ 500) exiting the router.
     """
+
+    def __init__(
+        self,
+        status_codes_to_abort: Iterable[int] = range(400, 501),
+        *,
+        status_code_reponse_parser: Callable[[any], int] = get_status_code_from,
+        aborter: Callable[[int], any] = abort
+    ):
+        self.status_codes_to_abort = status_codes_to_abort
+        self.status_code_reponse_parser = status_code_reponse_parser
+        self.aborter = aborter
 
     def call_route(self, route: Callable, *args, **kwargs) -> any:
         response = route(*args, **kwargs)
+        status_code = self.status_code_reponse_parser(response)
 
-        status_code = get_status_code_from(response)
-
-        if 400 <= status_code <= 500:
-            abort(status_code)
-
-        return response
+        return (
+            self.aborter(status_code)
+            if status_code in self.status_codes_to_abort
+            else response
+        )
 
 
 class StatusCodeRedirectorMiddleware(Middleware):
