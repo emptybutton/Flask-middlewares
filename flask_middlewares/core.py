@@ -57,7 +57,7 @@ class ProxyMiddleware(Middleware):
         return call_layer(*args, **kwargs)
 
 
-class IMiddlewareAppRegistrar(ABC):
+class IAppMiddlewareRegistrar(ABC):
     """Registrar interface for middleware integration with Flask application."""
 
     @abstractmethod
@@ -103,15 +103,15 @@ FLASK_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
 }
 
 
-class MiddlewareAppRegistrar(IMiddlewareAppRegistrar):
+class AppMiddlewareRegistrar(IAppMiddlewareRegistrar):
     """
     Class that implements middleware integration in a Flask application.
 
     Can be created using config variables (See create_from_config class method).
     """
 
-    _proxy_middleware_factory: Callable[[Iterable[IMiddleware]], IMiddleware] = ProxyMiddleware
     _config_field_names: dict[str, str] = FLASK_APP_CONFIG_FIELD_NAMES
+    _proxy_middleware_factory: Callable[[Iterable[IMiddleware]], ProxyMiddleware] = ProxyMiddleware
 
     def __init__(
         self,
