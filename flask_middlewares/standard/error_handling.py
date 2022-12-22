@@ -191,67 +191,6 @@ class TypeErrorHandler(ErrorHandler, ABC):
         )
 
 
-class CustomJSONResponseErrorFormatter(JSONResponseTemplatedErrorFormatter, TypeErrorHandler):
-    """
-    Class that handles all errors that have arisen in the form of a JSON
-    response.
-    """
-
-    def __init__(
-        self,
-        error_types: Iterable[type],
-        status_code_resource: int | Callable[[Exception], int],
-        *,
-        is_format_message: bool = True,
-        is_format_type: bool = True,
-        is_error_correctness_under_supertype: bool = False
-    ):
-        self.error_types = error_types
-        self.status_code_resource = status_code_resource
-        self.is_format_message = is_format_message
-        self.is_format_type = is_format_type
-        self.is_error_correctness_under_supertype = is_error_correctness_under_supertype
-
-    @property
-    def error_types(self) -> Iterable[Exception]:
-        return self._correct_error_types_to_handle
-
-    @error_types.setter
-    def error_types(self, error_types: Iterable[Exception]) -> None:
-        self._correct_error_types_to_handle = error_types
-
-    @property
-    def is_format_message(self) -> bool:
-        return self._is_format_message
-
-    @is_format_message.setter
-    def is_format_message(self, is_format_message: bool) -> None:
-        self._is_format_message = is_format_message
-
-    @property
-    def is_format_type(self) -> bool:
-        return self._is_format_type
-
-    @is_format_type.setter
-    def is_format_type(self, is_format_type: bool) -> None:
-        self._is_format_type = is_format_type
-
-    @property
-    def is_error_correctness_under_supertype(self) -> bool:
-        return self._is_error_correctness_under_supertype
-
-    @is_error_correctness_under_supertype.setter
-    def is_error_correctness_under_supertype(self, is_error_correctness_under_supertype: bool) -> None:
-        self._is_error_correctness_under_supertype = is_error_correctness_under_supertype
-
-    def _get_status_code_from(self, error: Exception) -> int:
-        return (
-            self.status_code_resource(error)
-            if isinstance(self.status_code_resource, Callable)
-            else self.status_code_resource
-        )
-
-
 class ErrorMiddleware(Middleware, ABC):
     """Middleware class that handles errors that occurred in routers."""
 
