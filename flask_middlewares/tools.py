@@ -101,3 +101,12 @@ class BinarySet(StylizedMixin):
             included if self.included is not None or other.included is not None else None,
             non_included if self.non_included is not None or other.non_included is not None else None
         )
+def parse_config_from(
+    file_name: str,
+    config_parse_method: Callable[[Config, str], None]=Config.from_object
+) -> Config:
+    config = Config(str())
+    config_parse_method(config, file_name)
+
+    return config
+
