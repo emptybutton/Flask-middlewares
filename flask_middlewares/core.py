@@ -103,7 +103,7 @@ FLASK_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
 }
 
 
-class AppMiddlewareRegistrar(IAppMiddlewareRegistrar):
+class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
     """
     Class that implements middleware integration in a Flask application.
 
@@ -338,9 +338,9 @@ class AppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         return tuple(config.get(cls._config_field_names['global_middlewares'], tuple()))
 
 
-class ProxyMiddlewareAppRegistrar(IMiddlewareAppRegistrar):
+class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
     """
-    MiddlewareAppRegistrar proxy class.
+    FlaskAppMiddlewareRegistrar proxy class.
 
     Used to call multiple registrars to one application.
     """
