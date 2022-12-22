@@ -46,7 +46,7 @@ class ProxyMiddleware(Middleware):
     """Middleware class delegating delegation to other middlewares."""
 
     def __init__(self, middlewares: Iterable[IMiddleware]):
-        self.middlewares = list(middlewares)
+        self.middlewares = middlewares
 
     def call_route(self, route: Callable, *args, **kwargs) -> any:
         call_layer = route
