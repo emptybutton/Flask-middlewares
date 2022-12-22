@@ -413,8 +413,8 @@ class MiddlewareKeeper(ABC):
         self._update_middlewares()
 
     @property
-    def _middlewares(self) -> tuple[IMiddleware]:
-        return tuple(self._proxy_middleware.middlewares)
+    def _middlewares(self) -> Iterable[IMiddleware]:
+        return self._proxy_middleware.middlewares
 
     @_middlewares.setter
     def _middlewares(self, middlewares: Iterable[IMiddleware]) -> None:
