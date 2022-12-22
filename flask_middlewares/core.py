@@ -89,7 +89,7 @@ class IAppMiddlewareRegistrar(ABC):
         """
 
 
-FLASK_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
+DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
     'middlewares': 'MIDDLEWARES',
     'global_middlewares': 'GLOBAL_MIDDLEWARES',
     'environments': 'MIDDLEWARE_ENVIRONMENTS',
@@ -110,7 +110,6 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
     Can be created using config variables (See create_from_config class method).
     """
 
-    _config_field_names: dict[str, str] = FLASK_APP_CONFIG_FIELD_NAMES
     _proxy_middleware_factory: Callable[[Iterable[IMiddleware]], ProxyMiddleware] = ProxyMiddleware
 
     def __init__(
@@ -185,6 +184,7 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         cls,
         config: dict,
         *args,
+        config_field_names: dict[str, str] = DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES,
         environment: Optional[str] = None,
         default_view_names: Optional[Iterable[str] | BinarySet] = None,
         default_blueprints: Optional[Iterable[str | Blueprint] | BinarySet] = None,
@@ -199,11 +199,11 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         Method for creating middleware registrar using config.
 
         In keyword arguments, it accepts arguments that complement | overwriting
-        config data. Takes the name of the config variables from the
-        _config_field_names class attribute.
+        config data. Takes the name of the config variables from the input
+        _config_field_names argument (By default, see DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES).
 
         Meaning of config variables (Variable names are given by their key in
-        _config_field_names attribute and wrapped in {} brackets):
+        _config_field_names argument and wrapped in {} brackets):
 
         {middlewares} - main middlewares with which the registrar will be
         initialized.
@@ -241,19 +241,19 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         on if you don't know what you are doing.
         """
 
-        global_middlewares = cls.__get_global_middlewares_from(config)
+        global_middlewares = cls.__get_global_middlewares_from(config, config_field_names)
 
         if environment is not None:
-            global_middlewares = cls.__get_global_middlewares_from(config)
-            config = config[cls._config_field_names['environments']].get(environment)
+            global_middlewares = cls.__get_global_middlewares_from(config, config_field_names)
+            config = config[config_field_names['environments']].get(environment)
 
             if config is None:
                 raise MiddlewareRegistrarConfigError(f"Environment \"{environment}\" missing")
 
-            environment_global_middlewares = cls.__get_global_middlewares_from(config)
+            environment_global_middlewares = cls.__get_global_middlewares_from(config, config_field_names)
 
             if (
-                config.get(cls._config_field_names['is_environment_middlewares_higher'], False)
+                config.get(config_field_names['is_environment_middlewares_higher'], False)
                 if is_environment_middlewares_higher is None
                 else is_environment_middlewares_higher
             ):
@@ -261,7 +261,7 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
             else:
                 global_middlewares += environment_global_middlewares
      
-        middlewares = config.get(cls._config_field_names['middlewares'], tuple())
+        middlewares = config.get(config_field_names['middlewares'], tuple())
 
         if not middlewares and not global_middlewares:
             raise MiddlewareRegistrarConfigError(
@@ -274,14 +274,14 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
             )
 
         if (
-            config.get(cls._config_field_names['is_using_global'], True)
+            config.get(config_field_names['is_using_global'], True)
             if is_using_global is None
             else is_using_global
         ):
             middleware_packs = [global_middlewares, middlewares]
 
             if not (
-                config.get(cls._config_field_names['is_global_middlewares_higher'], True)
+                config.get(config_field_names['is_global_middlewares_higher'], True)
                 if is_global_middlewares_higher is None
                 else is_global_middlewares_higher
             ):
@@ -290,13 +290,13 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
             middlewares = (*middleware_packs[0], *middleware_packs[1])
 
         if default_view_names is None:
-            default_view_names = config.get(cls._config_field_names['default_view_names'])
+            default_view_names = config.get(config_field_names['default_view_names'])
 
         if default_blueprints is None:
-            default_blueprints = config.get(cls._config_field_names['default_blueprints'])
+            default_blueprints = config.get(config_field_names['default_blueprints'])
 
         use_for_blueprint = (
-            config.get(cls._config_field_names['use_for_blueprint'])
+            config.get(config_field_names['use_for_blueprint'])
             if use_for_blueprint is None
             else use_for_blueprint
         )
@@ -342,8 +342,12 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         ) if blueprints is not None else blueprints
 
     @classmethod
-    def __get_global_middlewares_from(cls, config: dict[str, Iterable[IMiddleware]]) -> tuple[IMiddleware]:
-        return tuple(config.get(cls._config_field_names['global_middlewares'], tuple()))
+    def __get_global_middlewares_from(
+        cls,
+        config: dict[str, Iterable[IMiddleware]],
+        config_field_names: dict[str, str]
+    ) -> tuple[IMiddleware]:
+        return tuple(config.get(config_field_names['global_middlewares'], tuple()))
 
 
 class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
@@ -353,9 +357,7 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
     Used to call multiple registrars to one application.
     """
 
-    _config_field_names: dict[str, str] = FLASK_APP_CONFIG_FIELD_NAMES
-
-    def __init__(self, registrars: Iterable[IMiddlewareAppRegistrar]):
+    def __init__(self, registrars: Iterable[FlaskAppMiddlewareRegistrar]):
         self.registrars = tuple(registrars)
 
     def init_app(
@@ -373,21 +375,28 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         cls,
         config: dict,
         *args,
-        registrar_factory: Callable[[dict], IMiddlewareAppRegistrar] = MiddlewareAppRegistrar.create_from_config,
+        config_field_names: dict[str, str] = DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES,
+        registrar_factory: Callable[[dict], IAppMiddlewareRegistrar] = AppMiddlewareRegistrar.create_from_config,
         is_root_registrar_creating: bool = True,
         environment: None = None,
         **kwargs
     ) -> Self:
         environment_arguments = set(config.get(
-            cls._config_field_names['environments'],
-            tuple()
+            config_field_names['environments'],
+            dict()
         ).keys())
 
         if is_root_registrar_creating:
             environment_arguments.add(None)
 
         return cls(
-            registrar_factory(config, *args, environment=environment_argument, **kwargs)
+            registrar_factory(
+                config,
+                *args,
+                environment=environment_argument,
+                config_field_names=config_field_names,
+                **kwargs
+            )
             for environment_argument in environment_arguments
         )
 
