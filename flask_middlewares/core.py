@@ -348,7 +348,7 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
     """
 
     def __init__(self, registrars: Iterable[FlaskAppMiddlewareRegistrar]):
-        self.registrars = tuple(registrars)
+        self.registrars = registrars
 
     def init_app(
         self,
