@@ -311,7 +311,12 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
             **kwargs,
         )
 
-
+    def _is_support_view_name_for_registration(self, view_name: str) -> bool:
+        return (
+            (view_name != 'static' or self.is_apply_static)
+            and view_name in self.view_names
+            and self._is_support_view_name_for_blueprints(view_name)
+        )
 
     def _is_support_view_name_for_blueprints(self, view_name: str) -> bool:
         view_blueprint_names = view_name.split('.')[:-1]
