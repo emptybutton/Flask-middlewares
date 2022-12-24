@@ -400,14 +400,33 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
             environments.append(None)
 
         return cls(
-            registrar_factory(
-                config,
+            cls.__create_registrar_by_configs(
                 *args,
+                registrar_factory=registrar_factory,
+                config=config,
                 config_field_names=config_field_names, 
                 environment=environment,
                 **kwargs
             )
             for environment in environments
+        )
+
+    @classmethod
+    def __create_registrar_by_configs(
+        cls,
+        *args,
+        registrar_factory: Callable[[dict], IAppMiddlewareRegistrar],
+        config: dict,
+        config_field_names: dict[str, str],
+        environment: Optional[str],
+        **kwargs
+    ) -> IAppMiddlewareRegistrar:
+        return registrar_factory(
+            config,
+            *args,
+            config_field_names=config_field_names,
+            environment=environment,
+            **kwargs
         )
 
 
