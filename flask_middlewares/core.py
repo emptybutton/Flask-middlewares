@@ -81,17 +81,21 @@ class IAppMiddlewareRegistrar(ABC):
         """
 
 
-DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
+DEFAULT_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
     'middlewares': 'MIDDLEWARES',
     'global_middlewares': 'GLOBAL_MIDDLEWARES',
     'environments': 'MIDDLEWARE_ENVIRONMENTS',
-    'default_view_names': 'MIDDLEWARE_VIEW_NAMES',
-    'default_blueprints': 'MIDDLEWARE_BLUEPRINTS',
     'is_using_global': 'USE_GLOBAL_MIDDLEWARES',
-    'use_for_blueprint': 'USE_FOR_BLUEPRINT',
     'is_global_middlewares_higher': 'IS_GLOBAL_MIDDLEWARES_HIGHER',
-    'is_environment_middlewares_higher': 'IS_ENVIRONMENT_MIDDLEWARES_HIGHER',
-    'is_apply_static': 'IS_APPLY_STATIC'
+    'is_environment_middlewares_higher': 'IS_ENVIRONMENT_MIDDLEWARES_HIGHER'
+}
+
+DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
+    **DEFAULT_APP_CONFIG_FIELD_NAMES,
+    'view_names': 'MIDDLEWARE_VIEW_NAMES',
+    'blueprints': 'MIDDLEWARE_BLUEPRINTS',
+    'use_for_blueprint': 'USE_FOR_BLUEPRINT',
+    'is_apply_static': 'IS_APPLY_STATIC',
 }
 
 
