@@ -96,6 +96,7 @@ DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
     'blueprints': 'MIDDLEWARE_BLUEPRINTS',
     'use_for_blueprint': 'USE_FOR_BLUEPRINT',
     'is_apply_static': 'IS_APPLY_STATIC',
+    'is_apply_root_views': 'IS_APPLY_ROOT_VIEWS'
 }
 
 
@@ -116,6 +117,7 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         view_names: Iterable[str] = BinarySet(),
         blueprints: Iterable[str | Blueprint] = BinarySet(),
         is_apply_static: bool = False,
+        is_apply_root_views: bool = True
     ):
         self.proxy_middleware = self._proxy_middleware_factory(middlewares)
 
@@ -123,6 +125,7 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         self.blueprints = blueprints
 
         self.is_apply_static = is_apply_static
+        self.is_apply_root_views = is_apply_root_views
 
     @property
     def middlewares(self) -> Iterable[IMiddleware]:
@@ -212,6 +215,9 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         {is_apply_static} - Specifies the application to the \"system\" flask
         view getting static resources. DEFAULT False. It's better not to turn it
         on if you don't know what you are doing.
+
+        {is_apply_root_views} - Defines registration for view functions not
+        related to blueprints. DEFAULT True.
         """
 
         config_field_names = cls._default_config_field_names | config_field_names
@@ -295,6 +301,7 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
                 blueprints = (*blueprints, use_for_blueprint)
 
         cls.__optionally_copy_config_field_to_another('is_apply_static', config, kwargs, config_field_names)
+        cls.__optionally_copy_config_field_to_another('is_apply_root_views', config, kwargs, config_field_names)
 
         return cls(
             middlewares,
