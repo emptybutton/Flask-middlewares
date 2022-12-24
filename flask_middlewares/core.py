@@ -304,9 +304,6 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
             **kwargs,
         )
 
-    @staticmethod
-    def __get_binary_set_from_raw_data(raw_data: Iterable) -> BinarySet:
-        return raw_data if isinstance(raw_data, BinarySet) else BinarySet(raw_data)
 
     @staticmethod
     def __optional_get_blueprint_names_from(blueprints: Iterable[str | Blueprint] | None) -> tuple[str] | None:
