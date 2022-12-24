@@ -43,7 +43,13 @@ class Middleware(IMiddleware, ABC):
 
 
 class ProxyMiddleware(Middleware):
-    """Middleware class delegating delegation to other middlewares."""
+    """
+    Middleware class delegating delegation to other middlewares.
+
+    The resulting call to the router will go from the last middleware to the
+    first one, which provides the effect of middleware nesting, where subsequent
+    ones are nested in previous ones.
+    """
 
     def __init__(self, middlewares: Iterable[IMiddleware]):
         self.middlewares = middlewares
