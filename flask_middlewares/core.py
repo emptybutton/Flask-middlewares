@@ -409,8 +409,12 @@ class MiddlewareKeeper(ABC):
     When updating (and initializing) the proxy parses the middlewares from the
     _middleware_attribute_names attributes.
 
+    Despite the storage of middlewares in the form of a proxy, it has the ability
+    to interact with them by delegating interaction to the proxy.
+
     Not strict on missing middleware attributes, which can be changed by setting
     `_is_strict_to_middleware_attribute_parsing = True`.
+    
     Parses iterable attributes as attribute items.
     """
 
