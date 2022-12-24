@@ -64,25 +64,11 @@ class ProxyMiddleware(Middleware):
 
 
 class IAppMiddlewareRegistrar(ABC):
-    """Registrar interface for middleware integration with Flask application."""
+    """Registrar interface for middleware integration with some application."""
 
     @abstractmethod
-    def init_app(
-        self,
-        app: object,
-        *,
-        for_view_names: Iterable[str] = BinarySet(),
-        for_blueprints: Iterable[str | Blueprint] = BinarySet()
-    ) -> None:
-        """
-        Method for integrating middlewares with input application.
-
-        Accepts additional optional arguments:
-        * for_view_names - View function names to be integrated.
-
-        * for_blueprints - Blueprints whose view functions will be integrated.
-            Сan contain raw blueprint names.
-        """
+    def init_app(self, app: object) -> None:
+        """Method for integrating middlewares with input application."""
 
     @classmethod
     @abstractmethod
