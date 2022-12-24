@@ -350,15 +350,9 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
     def __init__(self, registrars: Iterable[FlaskAppMiddlewareRegistrar]):
         self.registrars = registrars
 
-    def init_app(
-        self,
-        app: Flask,
-        *,
-        for_view_names: Iterable[str] = BinarySet(),
-        for_blueprints: Iterable[str | Blueprint] = BinarySet()
-    ) -> None:
+    def init_app(self, app: Flask) -> None:
         for registrar in self.registrars:
-            registrar.init_app(app, for_view_names=for_view_names, for_blueprints=for_blueprints)
+            registrar.init_app(app)
 
     @classmethod
     def create_from_config(
