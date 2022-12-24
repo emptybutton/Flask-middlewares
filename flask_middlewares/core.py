@@ -359,7 +359,6 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         config_field_names: dict[str, str] = DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES,
         registrar_factory: Callable[[dict], IAppMiddlewareRegistrar] = AppMiddlewareRegistrar.create_from_config,
         is_root_registrar_creating: bool = True,
-        environment: None = None,
         **kwargs
     ) -> Self:
         environment_arguments = set(config.get(
