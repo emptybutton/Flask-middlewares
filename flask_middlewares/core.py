@@ -107,6 +107,7 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
     """
 
     _proxy_middleware_factory: Callable[[Iterable[IMiddleware]], ProxyMiddleware] = ProxyMiddleware
+    _default_config_field_names: dict[str, str] = DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES
 
     def __init__(
         self,
@@ -157,7 +158,7 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         cls,
         config: dict,
         *args,
-        config_field_names: dict[str, str] = DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES,
+        config_field_names: dict[str, str] = dict(),
         environment: Optional[str] = None,
         view_names: Optional[Iterable[str] | BinarySet] = None,
         blueprints: Optional[Iterable[str | Blueprint] | BinarySet] = None,
@@ -212,6 +213,8 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         view getting static resources. DEFAULT False. It's better not to turn it
         on if you don't know what you are doing.
         """
+
+        config_field_names = cls._default_config_field_names | config_field_names
 
         global_middlewares = cls.__get_global_middlewares_from(config, config_field_names)
 
