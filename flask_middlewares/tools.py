@@ -103,6 +103,14 @@ class BinarySet(StylizedMixin):
             non_included if self.non_included is not None or other.non_included is not None else None
         )
 
+    @classmethod
+    def create_simulated_by(cls, collection: Iterable) -> Self:
+        return (
+            cls(collection.included, collection.non_included)
+            if isinstance(collection, BinarySet)
+            else cls(collection)
+        )
+
 
 class TypeDeterminant:
     """
