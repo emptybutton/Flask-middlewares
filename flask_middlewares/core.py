@@ -312,6 +312,24 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         )
 
 
+
+    def _is_support_view_name_for_blueprints(self, view_name: str) -> bool:
+        view_blueprint_names = view_name.split('.')[:-1]
+
+        blueprint_names = BinarySet(
+            self.__optional_get_blueprint_names_from(self.blueprints.included),
+            self.__optional_get_blueprint_names_from(self.blueprints.non_included)
+        )
+
+        return (
+            not view_blueprint_names
+            and self.is_apply_root_views
+            or any(
+                view_blueprint_name in blueprint_names
+                for view_blueprint_name in view_blueprint_names
+            )
+        )
+
     @staticmethod
     def __optional_get_blueprint_names_from(blueprints: Iterable[str | Blueprint] | None) -> tuple[str] | None:
         return tuple(
