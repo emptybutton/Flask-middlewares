@@ -391,6 +391,25 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         is_root_registrar_creating: bool = True,
         **kwargs
     ) -> Self:
+        """
+        Method for creating middleware registrar using config.
+
+        In keyword arguments, it accepts arguments delegating to Flask's
+        registry factory method (Default is
+        FlaskAppMiddlewareRegistrar.create_from_config. See it for default usage).
+
+        Despite delegation, it has several other keyword arguments that control
+        the delegation process:
+
+        registrar_factory - Factory for the registrars. Ignore if you don't want
+        to initialize the proxy with some other registrars.
+
+        is_root_registrar_creating - Defines the initialization of the registrar
+        using general purpose config variables. DEFAULT True. Disable it if you
+        want to initialize registrars only from the environments. Doesn't change
+        the influence of the standard environment on other environments.
+        """
+
         environments = list(config.get(
             config_field_names['environments'],
             dict()
