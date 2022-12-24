@@ -14,14 +14,18 @@ class StatusCodeAbortingMiddleware(Middleware):
 
     def __init__(
         self,
-        status_codes_to_abort: Iterable[int] = range(400, 501),
+        status_code_resource_to_abort: Iterable[int] | int = range(400, 501),
         *,
         status_code_reponse_parser: Callable[[any], int] = get_status_code_from,
         aborter: Callable[[int], any] = abort
     ):
-        self.status_codes_to_abort = status_codes_to_abort
         self.status_code_reponse_parser = status_code_reponse_parser
         self.aborter = aborter
+        self.status_codes_to_abort = (
+            status_code_resource_to_abort
+            if isinstance(status_code_resource_to_abort, Iterable)
+            else (status_code_resource_to_abort, )
+        )
 
     def call_route(self, route: Callable, *args, **kwargs) -> any:
         response = route(*args, **kwargs)
@@ -40,8 +44,8 @@ class StatusCodeRedirectorMiddleware(Middleware):
     of a status code of a response returned from the router.
 
     Specifies the URL of the endpoint by the redirect_resource attribute, which
-    can represent both the URL itself and the name of the view function
-    processed by this URL.
+    can represent both the URL itself and, if redirect_resource is default, the
+    name of the view function processed by this URL.
 
     Defines the transition on the status codes of the response corresponding to
     the value / values of the status codes contained in the status_codes
