@@ -386,23 +386,23 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         is_root_registrar_creating: bool = True,
         **kwargs
     ) -> Self:
-        environment_arguments = set(config.get(
+        environments = list(config.get(
             config_field_names['environments'],
             dict()
         ).keys())
 
         if is_root_registrar_creating:
-            environment_arguments.add(None)
+            environments.append(None)
 
         return cls(
             registrar_factory(
                 config,
                 *args,
-                environment=environment_argument,
-                config_field_names=config_field_names,
+                config_field_names=config_field_names, 
+                environment=environment,
                 **kwargs
             )
-            for environment_argument in environment_arguments
+            for environment in environments
         )
 
 
