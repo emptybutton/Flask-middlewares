@@ -294,8 +294,7 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
             elif isinstance(blueprints, Iterable):
                 blueprints = (*blueprints, use_for_blueprint)
 
-        if is_apply_static is not None:
-            kwargs['is_apply_static'] = is_apply_static
+        cls.__optionally_copy_config_field_to_another('is_apply_static', config, kwargs, config_field_names)
 
         return cls(
             middlewares,
@@ -323,6 +322,23 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         config_field_names: dict[str, str]
     ) -> tuple[IMiddleware]:
         return tuple(config.get(config_field_names['global_middlewares'], tuple()))
+
+    @staticmethod
+    def __optionally_copy_config_field_to_another(
+        field_name: str,
+        config_owner: dict,
+        config_recipient: dict,
+        config_field_names: dict
+    ) -> None:
+        field_value = config_recipient.get(field_name)
+
+        if field_value is None:
+            config_owner.get(config_field_names[field_name])
+
+        if field_value is not None:
+            config_recipient[field_name] = field_value
+
+        return field_value
 
 
 class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
