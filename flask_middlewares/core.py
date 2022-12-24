@@ -357,7 +357,7 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         config: dict,
         *args,
         config_field_names: dict[str, str] = DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES,
-        registrar_factory: Callable[[dict], IAppMiddlewareRegistrar] = AppMiddlewareRegistrar.create_from_config,
+        registrar_factory: Callable[[dict], IAppMiddlewareRegistrar] = FlaskAppMiddlewareRegistrar.create_from_config,
         is_root_registrar_creating: bool = True,
         **kwargs
     ) -> Self:
