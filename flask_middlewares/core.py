@@ -421,6 +421,21 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         environment: Optional[str],
         **kwargs
     ) -> IAppMiddlewareRegistrar:
+        if 'is_apply_root_views' not in kwargs.keys():
+            finished_config_finding_specification = config.get(
+                config_field_names['environments'], dict()
+            ).get(environment, dict()) if environment is not None else config
+
+            specifying_root_view_appling = finished_config_finding_specification.get(
+                config_field_names['is_apply_root_views']
+            )
+
+            kwargs['is_apply_root_views'] = (
+                specifying_root_view_appling
+                if specifying_root_view_appling is not None
+                else environment is None
+            )
+
         return registrar_factory(
             config,
             *args,
