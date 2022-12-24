@@ -112,14 +112,14 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         self,
         middlewares: Iterable[IMiddleware],
         *,
-        default_view_names: Iterable[str] = BinarySet(),
-        default_blueprints: Iterable[str | Blueprint] = BinarySet(),
-        is_apply_static: bool = False
+        view_names: Iterable[str] = BinarySet(),
+        blueprints: Iterable[str | Blueprint] = BinarySet(),
+        is_apply_static: bool = False,
     ):
         self.proxy_middleware = self._proxy_middleware_factory(middlewares)
 
-        self.default_view_name_set = default_view_names
-        self.default_blueprint_set = default_blueprints
+        self.view_names = view_names
+        self.blueprints = blueprints
 
         self.is_apply_static = is_apply_static
 
@@ -132,47 +132,24 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         self.proxy_middleware.middlewares = middlewares
 
     @property
-    def default_view_name_set(self) -> BinarySet:
-        return self._default_view_name_set
+    def view_names(self) -> BinarySet:
+        return self._view_names
 
-    @default_view_name_set.setter
-    def default_view_name_set(self, default_view_name_set: Iterable[str]) -> None:
-        self._default_view_name_set = self.__get_binary_set_from_raw_data(default_view_name_set)
+    @view_names.setter
+    def view_names(self, view_names: Iterable[str]) -> None:
+        self._view_names = BinarySet.create_simulated_by(view_names)
 
     @property
-    def default_blueprint_set(self) -> BinarySet:
-        return self._default_blueprint_set
+    def blueprints(self) -> BinarySet:
+        return self._blueprints
 
-    @default_blueprint_set.setter
-    def default_blueprint_set(self, default_blueprint_set: Iterable[str | Blueprint]) -> None:
-        self._default_blueprint_set = self.__get_binary_set_from_raw_data(default_blueprint_set)
+    @blueprints.setter
+    def blueprints(self, blueprints: Iterable[str | Blueprint]) -> None:
+        self._blueprints = BinarySet.create_simulated_by(blueprints)
 
-    def init_app(
-        self,
-        app: Flask,
-        *,
-        for_view_names: Iterable[str] = BinarySet(),
-        for_blueprints: Iterable[str | Blueprint] = BinarySet(),
-    ) -> None:
-        view_names = self.default_view_name_set | self.__get_binary_set_from_raw_data(for_view_names)
-        blueprint_names = self.default_blueprint_set | self.__get_binary_set_from_raw_data(for_blueprints)
-
-        blueprint_names = BinarySet(
-            self.__optional_get_blueprint_names_from(blueprint_names.included),
-            self.__optional_get_blueprint_names_from(blueprint_names.non_included)
-        )
-
-        for view_name, view_function in app.view_functions.items():
-            view_blueprint_names = view_name.split('.')[:-1]
-
-            if (
-                (view_name != 'static' or self.is_apply_static)
-                and view_name in view_names
-                and (not view_blueprint_names and not blueprint_names or any(
-                    view_blueprint_name in blueprint_names
-                    for view_blueprint_name in view_blueprint_names
-                ))
-            ):
+    def init_app(self, app: Flask) -> None:
+        for view_name, view_function in tuple(app.view_functions.items())[::-1]:
+            if self._is_support_view_name_for_registration(view_name):
                 app.view_functions[view_name] = self.proxy_middleware.decorate(view_function)
 
     @classmethod
@@ -182,13 +159,12 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         *args,
         config_field_names: dict[str, str] = DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES,
         environment: Optional[str] = None,
-        default_view_names: Optional[Iterable[str] | BinarySet] = None,
-        default_blueprints: Optional[Iterable[str | Blueprint] | BinarySet] = None,
+        view_names: Optional[Iterable[str] | BinarySet] = None,
+        blueprints: Optional[Iterable[str | Blueprint] | BinarySet] = None,
         is_using_global: Optional[bool] = None,
         use_for_blueprint: Optional[bool | str | Blueprint] = None,
         is_global_middlewares_higher: Optional[bool] = None,
         is_environment_middlewares_higher: Optional[bool] = None,
-        is_apply_static: Optional[bool] = None,
         **kwargs
     ) -> Self:
         """
@@ -204,10 +180,10 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         {middlewares} - main middlewares with which the registrar will be
         initialized.
 
-        {default_view_names} - view names with which the registrar will be
+        {view_names} - view names with which the registrar will be
         initialized.
 
-        {default_blueprints} - blueprints with which the registrar will be
+        {blueprints} - blueprints with which the registrar will be
         initialized.
 
         {global_middlewares} - Additional middleware globally added to registrars,
@@ -227,7 +203,7 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         (including global) middlewares from the environment. DEFAULT False.
 
         {use_for_blueprint} - When assigned, adds the blueprint from the value
-        of the variable to the default_blueprints attribute. Can be set to True
+        of the variable to the blueprints attribute. Can be set to True
         when in an environment, in which case it takes the name of the
         environment as the blueprint name. It is better to use only in the
         environment but no one limits you.
@@ -285,11 +261,11 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
 
             middlewares = (*middleware_packs[0], *middleware_packs[1])
 
-        if default_view_names is None:
-            default_view_names = config.get(config_field_names['default_view_names'])
+        if view_names is None:
+            view_names = config.get(config_field_names['view_names'])
 
-        if default_blueprints is None:
-            default_blueprints = config.get(config_field_names['default_blueprints'])
+        if blueprints is None:
+            blueprints = config.get(config_field_names['blueprints'])
 
         use_for_blueprint = (
             config.get(config_field_names['use_for_blueprint'])
@@ -306,14 +282,14 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
 
                 use_for_blueprint = environment
 
-            if default_blueprints is None:
-                default_blueprints = (use_for_blueprint, )
+            if blueprints is None:
+                blueprints = (use_for_blueprint, )
 
-            elif isinstance(default_blueprints, BinarySet):
-                default_blueprints.included.add(use_for_blueprint)
+            elif isinstance(blueprints, BinarySet):
+                blueprints.included.add(use_for_blueprint)
 
-            elif isinstance(default_blueprints, Iterable):
-                default_blueprints = (*default_blueprints, use_for_blueprint)
+            elif isinstance(blueprints, Iterable):
+                blueprints = (*blueprints, use_for_blueprint)
 
         if is_apply_static is not None:
             kwargs['is_apply_static'] = is_apply_static
@@ -321,8 +297,8 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         return cls(
             middlewares,
             *args,
-            default_view_names=default_view_names,
-            default_blueprints=default_blueprints,
+            view_names=view_names,
+            blueprints=blueprints,
             **kwargs,
         )
 
