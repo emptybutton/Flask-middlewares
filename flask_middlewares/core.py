@@ -315,9 +315,8 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
             for blueprint in blueprints
         ) if blueprints is not None else blueprints
 
-    @classmethod
+    @staticmethod
     def __get_global_middlewares_from(
-        cls,
         config: dict[str, Iterable[IMiddleware]],
         config_field_names: dict[str, str]
     ) -> tuple[IMiddleware]:
