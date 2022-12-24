@@ -394,7 +394,7 @@ class MiddlewareKeeper(ABC):
 
     Not strict on missing middleware attributes, which can be changed by setting
     `_is_strict_to_middleware_attribute_parsing = True`.
-    
+
     Parses iterable attributes as attribute items.
     """
 
