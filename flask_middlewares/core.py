@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Optional, Iterable, Self
+from typing import Callable, Iterable, Self, Final, ClassVar, Optional
 from functools import wraps, partial
 
 from flask import Flask, Blueprint
@@ -81,7 +81,7 @@ class IAppMiddlewareRegistrar(ABC):
         """
 
 
-DEFAULT_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
+DEFAULT_APP_CONFIG_FIELD_NAMES: Final[dict[str, str]] = {
     'middlewares': 'MIDDLEWARES',
     'global_middlewares': 'GLOBAL_MIDDLEWARES',
     'environments': 'MIDDLEWARE_ENVIRONMENTS',
@@ -90,7 +90,7 @@ DEFAULT_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
     'is_environment_middlewares_higher': 'IS_ENVIRONMENT_MIDDLEWARES_HIGHER'
 }
 
-DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES: dict[str, str] = {
+DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES: Final[dict[str, str]] = {
     **DEFAULT_APP_CONFIG_FIELD_NAMES,
     'view_names': 'MIDDLEWARE_VIEW_NAMES',
     'blueprints': 'MIDDLEWARE_BLUEPRINTS',
@@ -108,7 +108,7 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
     """
 
     _proxy_middleware_factory: Callable[[Iterable[IMiddleware]], ProxyMiddleware] = ProxyMiddleware
-    _default_config_field_names: dict[str, str] = DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES
+    _default_config_field_names: ClassVar[dict[str, str]] = DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES
 
     def __init__(
         self,
