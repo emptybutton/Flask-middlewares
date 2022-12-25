@@ -213,10 +213,11 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         (including global) middlewares from the environment. DEFAULT False.
 
         {use_for_blueprint} - When assigned, adds the blueprint from the value
-        of the variable to the blueprints attribute. Can be set to True
-        when in an environment, in which case it takes the name of the
-        environment as the blueprint name. It is better to use only in the
-        environment but no one limits you.
+        of the variable to the blueprints attribute and disables
+        {is_apply_root_views} if it is not set somehow. Can be set to True when
+        in an environment, in which case it takes the name of the environment as
+        the blueprint name. It is better to use only in the environment but no
+        one limits you.
 
         {is_apply_static} - Specifies the application to the \"system\" flask
         view getting static resources. DEFAULT False. It's better not to turn it
@@ -308,6 +309,10 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
 
             elif isinstance(blueprints, Iterable):
                 blueprints = (*blueprints, use_for_blueprint)
+
+            if is_apply_root_views is None:
+                is_apply_root_views = False
+
 
         if is_apply_root_views is not None:
             kwargs['is_apply_root_views'] = is_apply_root_views
