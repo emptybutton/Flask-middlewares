@@ -174,6 +174,7 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         use_for_blueprint: Optional[bool | str | Blueprint] = None,
         is_global_middlewares_higher: Optional[bool] = None,
         is_environment_middlewares_higher: Optional[bool] = None,
+        is_apply_root_views: Optional[bool] = None,
         **kwargs
     ) -> Self:
         """
@@ -281,6 +282,9 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         if blueprints is None:
             blueprints = config.get(config_field_names['blueprints'])
 
+        if is_apply_root_views is None:
+            is_apply_root_views = config.get(config_field_names['is_apply_root_views'])
+
         use_for_blueprint = (
             config.get(config_field_names['use_for_blueprint'])
             if use_for_blueprint is None
@@ -305,7 +309,9 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
             elif isinstance(blueprints, Iterable):
                 blueprints = (*blueprints, use_for_blueprint)
 
-        cls.__optionally_copy_config_field_to_another('is_apply_static', config, kwargs, config_field_names)
+        if is_apply_root_views is not None:
+            kwargs['is_apply_root_views'] = is_apply_root_views
+
         cls.__optionally_copy_config_field_to_another('is_apply_root_views', config, kwargs, config_field_names)
 
         return cls(
@@ -424,48 +430,14 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
             environments.append(None)
 
         return cls(
-            cls.__create_registrar_by_configs(
+            registrar_factory(
+                config,
                 *args,
-                registrar_factory=registrar_factory,
-                config=config,
-                config_field_names=config_field_names, 
+                config_field_names=config_field_names,
                 environment=environment,
                 **kwargs
             )
             for environment in environments
-        )
-
-    @classmethod
-    def __create_registrar_by_configs(
-        cls,
-        *args,
-        registrar_factory: Callable[[dict], IAppMiddlewareRegistrar],
-        config: dict,
-        config_field_names: dict[str, str],
-        environment: Optional[str],
-        **kwargs
-    ) -> IAppMiddlewareRegistrar:
-        if 'is_apply_root_views' not in kwargs.keys():
-            finished_config_finding_specification = config.get(
-                config_field_names['environments'], dict()
-            ).get(environment, dict()) if environment is not None else config
-
-            specifying_root_view_appling = finished_config_finding_specification.get(
-                config_field_names['is_apply_root_views']
-            )
-
-            kwargs['is_apply_root_views'] = (
-                specifying_root_view_appling
-                if specifying_root_view_appling is not None
-                else environment is None
-            )
-
-        return registrar_factory(
-            config,
-            *args,
-            config_field_names=config_field_names,
-            environment=environment,
-            **kwargs
         )
 
 
