@@ -5,6 +5,7 @@ from functools import cached_property
 from flask import jsonify
 
 from flask_middlewares import Middleware
+from flask_middlewares.tools import create_json_response_with
 
 
 class IErrorHandler(ABC):
@@ -122,11 +123,15 @@ class JSONResponseFormatter(ABC):
     def __init__(
         self,
         *,
-        response_factory: Callable[[dict, int], any] = create_json_response_by,
-        status_code_parser: Callable[[Exception], int] = lambda error: 200
+        response_factory: Callable[[dict, int], any] = create_json_response_with,
+        status_code_resource: Callable[[Exception], int] | int = 200
     ):
         self.response_factory = response_factory
-        self.status_code_parser = status_code_parser
+        self.status_code_parser = (
+            self.status_code_resource(error)
+            if isinstance(status_code_resource, Callable)
+            else status_code_resource
+        )
 
     def _handle_error(self, error: Exception) -> any:
         return self.response_factory(
@@ -145,12 +150,12 @@ class JSONResponseTemplatedErrorFormatter(JSONResponseFormatter):
     def __init__(
         self,
         *,
-        response_factory: Callable[[dict, int], any] = create_json_response_by,
-        status_code_parser: Callable[[Exception], int] = lambda error: 200,
+        response_factory: Callable[[dict, int], any] = create_json_response_with,
+        status_code_resource: Callable[[Exception], int] | int = 200,
         is_format_message: bool = True,
         is_format_type: bool = True
     ):
-        super().__init__(response_factory=response_factory, status_code_parser=status_code_parser)
+        super().__init__(response_factory=response_factory, status_code_resource=status_code_resource)
         self.is_format_message = is_format_message
         self.is_format_type = is_format_type
 
