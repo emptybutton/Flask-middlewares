@@ -1,4 +1,5 @@
-from typing import Iterable, Optional, Self, Callable
+from functools import cached_property
+from typing import Iterable, Optional, Self, Callable, Final
 
 from beautiful_repr import StylizedMixin, Field, TemplateFormatter
 from flask import Response, Config, url_for, redirect
@@ -146,6 +147,65 @@ class TypeDeterminant:
                 for correct_type in self.correct_types
             )
         )
+
+
+class MultiRange:
+    def __init__(self, range_: Iterable[range] | range):
+        self._ranges = (
+            (range_, )
+            if isinstance(range_, range)
+            else tuple(range_)
+        )
+
+    @property
+    def ranges(self) -> tuple[range]:
+        return self._ranges
+
+    def get_with(self, range_resource: Self | Iterable[range] | range) -> Self:
+        if isinstance(range_resource, MultiRange):
+            range_resource = range_resource.ranges
+
+        if isinstance(range_resource, range):
+            range_resource = (range_resource, )
+
+        return self.__class__(self.ranges + tuple(range_resource))
+
+    def __repr__(self) -> str:
+        return "MultiRange({})".format(', '.join(map(str, self.ranges)))
+
+    def __iter__(self) -> iter:
+        return (
+            item
+            for range_ in self.ranges
+            for item in range_
+        )
+
+    def __contains__(self, item: any) -> bool:
+        return any(
+            item in range_
+            for range_ in self.ranges
+        )
+
+    def __or__(self, range_resource: Self | Iterable[range] | range) -> Self:
+        return self.get_with(range_resource)
+
+
+class StatusCodeGroup:
+    """
+    Class for storing the HTTP status codes of responses in the form of a
+    structure and declarative access to them.
+    """
+
+    INFORMATIONAL: Final[MultiRange] = MultiRange(range(100, 200))
+    SUCCESSFUL: Final[MultiRange] = MultiRange(range(200, 300))
+    REDIRECTION: Final[MultiRange] = MultiRange(range(300, 400))
+    CLIENT_ERROR: Final[MultiRange] = MultiRange(range(400, 500))
+    SERVER_ERROR: Final[MultiRange] = MultiRange(range(500, 600))
+
+    GOOD: Final[MultiRange] = MultiRange(range(100, 400))
+    ERROR: Final[MultiRange] = MultiRange(range(400, 600))
+
+    ALL: Final[MultiRange] = MultiRange(range(100, 600))
 
 
 def parse_config_from(
