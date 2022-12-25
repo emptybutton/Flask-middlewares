@@ -157,6 +157,11 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
                 app.view_functions[view_name] = self.proxy_middleware.decorate(view_function)
 
     @classmethod
+    @property
+    def default_config_field_names(cls) -> dict[str, str]:
+        return cls._default_config_field_names
+
+    @classmethod
     def create_from_config(
         cls,
         config: dict,
