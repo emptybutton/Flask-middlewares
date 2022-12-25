@@ -192,13 +192,11 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         {middlewares} - main middlewares with which the registrar will be
         initialized.
 
-        {view_names} - view names with which the registrar will be
-        initialized.
+        {view_names} - view names with which the registrar will be initialized.
 
-        {blueprints} - blueprints with which the registrar will be
-        initialized.
+        {blueprints} - blueprints with which the registrar will be initialized.
 
-        {global_middlewares} - Additional middleware globally added to registrars,
+        {global_middlewares} - Additional middleware globally added to registrars.
 
         {is_using_global} - Flag indicating the presence of middlewares from
         {global_middlewares}. DEFAULT True.
