@@ -25,7 +25,12 @@ class BinarySet(StylizedMixin):
     """
     Like set Class that explicitly stores entities that are not stored in it.
 
-    In the absence of any values, it considers that everything is present in it.
+    Storing an empty collection is considered storing. None is used for no
+    storage.
+
+    In the case when the set doesn't store anything, it is considered that
+    it stores everything.
+
     Iterable over the values included in the set.
     """
 
@@ -147,6 +152,8 @@ def parse_config_from(
     file_name: str,
     config_parse_method: Callable[[Config, str], None]=Config.from_object
 ) -> Config:
+    """Function for creating a config, delegating the update method to it."""
+
     config = Config(str())
     config_parse_method(config, file_name)
 
@@ -154,6 +161,8 @@ def parse_config_from(
 
 
 def redirect_by(url_resource: str) -> Response:
+    """Function to get redirect with possible url from blueprints."""
+
     try:
         url_resource = url_for(url_resource)
     except BuildError:
@@ -163,6 +172,8 @@ def redirect_by(url_resource: str) -> Response:
 
 
 def create_json_response_with(payload: dict, status_code: int = 200) -> Response:
+    """Function to generate flask response with JSON data and status code."""
+    
     response = jsonify(payload)
     response.status_code = self._get_status_code_from(error)
 
