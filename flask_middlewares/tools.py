@@ -87,8 +87,6 @@ class BinarySet(StylizedMixin):
     def __xor__(self, other: Self) -> Self:
         return self.__get_changed_by(set.__xor__, other)
 
-    def __get_changed_by(self, manupulation_methdod: Callable[[set, set], set], other: Self) -> Self:
-        included = manupulation_methdod(
     @classmethod
     def create_simulated_by(cls, collection: Iterable) -> Self:
         return (
@@ -97,11 +95,13 @@ class BinarySet(StylizedMixin):
             else cls(collection)
         )
 
+    def __get_changed_by(self, set_manipulation_methdod: Callable[[set, set], set], other: Self) -> Self:
+        included = set_manipulation_methdod(
             (self.included if self.included is not None else set()),
             (other.included if other.included is not None else set())
         )
 
-        non_included = manupulation_methdod(
+        non_included = set_manipulation_methdod(
             (self.non_included if self.non_included is not None else set()),
             (other.non_included if other.non_included is not None else set())
         )
