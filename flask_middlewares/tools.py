@@ -89,6 +89,14 @@ class BinarySet(StylizedMixin):
 
     def __get_changed_by(self, manupulation_methdod: Callable[[set, set], set], other: Self) -> Self:
         included = manupulation_methdod(
+    @classmethod
+    def create_simulated_by(cls, collection: Iterable) -> Self:
+        return (
+            cls(collection.included, collection.non_included)
+            if isinstance(collection, BinarySet)
+            else cls(collection)
+        )
+
             (self.included if self.included is not None else set()),
             (other.included if other.included is not None else set())
         )
@@ -101,14 +109,6 @@ class BinarySet(StylizedMixin):
         return self.__class__(
             included if self.included is not None or other.included is not None else None,
             non_included if self.non_included is not None or other.non_included is not None else None
-        )
-
-    @classmethod
-    def create_simulated_by(cls, collection: Iterable) -> Self:
-        return (
-            cls(collection.included, collection.non_included)
-            if isinstance(collection, BinarySet)
-            else cls(collection)
         )
 
 
