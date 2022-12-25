@@ -57,7 +57,7 @@ class ProxyMiddleware(Middleware):
     def call_route(self, route: Callable, *args, **kwargs) -> any:
         call_layer = route
 
-        for middleware in self.middlewares[::-1]:
+        for middleware in tuple(self.middlewares)[::-1]:
             call_layer = partial(middleware.call_route, call_layer)
 
         return call_layer(*args, **kwargs)
