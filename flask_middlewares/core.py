@@ -181,11 +181,13 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         Method for creating middleware registrar using config.
 
         In keyword arguments, it accepts arguments that complement | overwriting
-        config data. Takes the name of the config variables from the input
-        _config_field_names argument (By default, see DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES).
+        config data. Takes the name of standard config of names of this class
+        (see DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES or
+        \"the name of this class\".default_config_field_names) and the config
+        variables from the input config_field_names argument.
 
         Meaning of config variables (Variable names are given by their key in
-        _config_field_names argument and wrapped in {} brackets):
+        config_field_names argument and wrapped in {} brackets):
 
         {middlewares} - main middlewares with which the registrar will be
         initialized.
