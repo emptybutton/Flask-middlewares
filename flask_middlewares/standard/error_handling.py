@@ -66,29 +66,6 @@ class ProxyErrorHandler(IErrorHandler):
         return factory_decorator
 
 
-class ErrorHandlerAllower(ProxyErrorHandler):
-    """
-    ProxyErrorHandler class that disables its middlewares under certain 
-    conditions.
-
-    Delegates the definition of middlewares to determinant.
-    """
-
-    def __init__(
-        self,
-        error_handlers: Iterable[IErrorHandler] | IErrorHandler,
-        determinant: Callable[[Exception], bool],
-        *,
-        is_return_delegated: bool = True
-    ):
-        super().__init__(error_handlers, is_return_delegated=is_return_delegated)
-        self.determinant = determinant
-
-    def __call__(self, error: Exception) -> any:
-        if self.determinant(error):
-            return super().__call__(error)
-
-
 class ErrorHandler(IErrorHandler, ABC):
     """
     Class with safe implementation of ErrorHandler interface.
@@ -106,6 +83,37 @@ class ErrorHandler(IErrorHandler, ABC):
     @abstractmethod
     def _handle_error(self, error: Exception) -> any:
         """Method that implements direct handling of a specific error."""
+
+
+class ErrorHandlerAllower(ErrorHandler):
+    """
+    ErrorHandler class that enables or disables the work of its handler by
+    handling_determinant.
+
+    During initialization, it can take a collection of error handlers, then they
+    are converted into a proxy, whose factory passed to the input keyword
+    initialization argument.
+    """
+
+    def __init__(
+        self,
+        error_handler_resource: Iterable[IErrorHandler] | IErrorHandler,
+        handling_determinant: Callable[[Exception], bool],
+        *,
+        proxy_error_handler_factory: Callable[[Iterable[IErrorHandler] | IErrorHandler], IErrorHandler] = ProxyErrorHandler
+    ):
+        self.handling_determinant = handling_determinant
+        self.error_handler = (
+            proxy_error_handler_factory(error_handler_resource)
+            if isinstance(error_handler_resource, Iterable)
+            else error_handler_resource
+        )
+
+    def is_error_correct_to_handle(self, error: Exception) -> bool:
+        return self.handling_determinant(error)
+
+    def _handle_error(self, error: Exception) -> any:
+        return self.error_handler(error)
 
 
 class JSONResponseFormatter(ABC):
