@@ -410,6 +410,8 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         """
         Method for creating middleware registrar using config.
 
+        Creates registrars by environment, optionally including the root.
+
         In keyword arguments, it accepts arguments delegating to Flask's
         registry factory method (Default is
         FlaskAppMiddlewareRegistrar.create_from_config. See it for default usage).
