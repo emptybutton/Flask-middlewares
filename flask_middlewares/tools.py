@@ -1,4 +1,5 @@
-from functools import cached_property
+from abc import ABC, abstractmethod
+from functools import cached_property, reduce
 from typing import Iterable, Optional, Self, Callable, Final
 
 from beautiful_repr import StylizedMixin, Field, TemplateFormatter
@@ -115,6 +116,30 @@ class BinarySet(StylizedMixin):
         return self.__class__(
             included if self.included is not None or other.included is not None else None,
             non_included if self.non_included is not None or other.non_included is not None else None
+        )
+
+
+class HandlerReducer:
+    """Handler class that implements handling as a chain of actions of other handlers."""
+
+    def __init__(
+        self,
+        handler_resource: Iterable[Callable[[any], any]] | Callable[[any], any],
+        *handlers: Callable[[any], any]
+    ):
+        self.handlers = (
+            tuple(handler_resource)
+            if isinstance(handler_resource, Iterable)
+            else (handler_resource, )
+        ) + handlers
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}({' -> '.join(map(str, self.handlers))})"
+
+    def __call__(self, resource: any) -> any:
+        return reduce(
+            lambda resource, handler: handler(resource),
+            (resource, *self.handlers)
         )
 
 
