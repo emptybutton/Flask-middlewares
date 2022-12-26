@@ -117,6 +117,24 @@ class ErrorHandlerAllower(ErrorHandler):
         return self.error_handler(error)
 
 
+class TypeErrorHandler(ErrorHandler, ABC):
+    """
+    ErrorHandler class that implements getting the processing flag by error type.
+
+    Has the _is_error_correctness_under_supertype flag attribute that specifies
+    whether the error type should match the all error support types.
+    """
+
+    _correct_error_types_to_handle: Iterable[Exception]
+    _is_error_correctness_under_supertype: bool = False
+
+    def is_error_correct_to_handle(self, error: Exception) -> bool:
+        return (all if self._is_error_correctness_under_supertype else any)(
+            isinstance(error, correct_error_type)
+            for correct_error_type in self._correct_error_types_to_handle
+        )
+
+
 class JSONResponseFormatter(ABC):
     """Class that handles objects with a JSON Response as a result."""
 
@@ -184,24 +202,6 @@ class JSONResponseTemplatedErrorFormatter(JSONResponseFormatter):
         """
 
         return type(error).__name__
-
-
-class TypeErrorHandler(ErrorHandler, ABC):
-    """
-    ErrorHandler class that implements getting the processing flag by error type.
-
-    Has the _is_error_correctness_under_supertype flag attribute that specifies
-    whether the error type should match the all error support types.
-    """
-
-    _correct_error_types_to_handle: Iterable[Exception]
-    _is_error_correctness_under_supertype: bool = False
-
-    def is_error_correct_to_handle(self, error: Exception) -> bool:
-        return (all if self._is_error_correctness_under_supertype else any)(
-            isinstance(error, correct_error_type)
-            for correct_error_type in self._correct_error_types_to_handle
-        )
 
 
 class ErrorMiddleware(Middleware, ABC):
