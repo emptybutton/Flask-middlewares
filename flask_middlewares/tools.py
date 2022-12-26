@@ -317,5 +317,23 @@ class StatusCodeResponseFactory:
         return response
 
 
+class BaseExceptionDictTemplater:
+    """Formatter class that formatting an error in dict."""
+
+    def __init__(self, *, is_format_message: bool = True, is_format_type: bool = True):
+        self.is_format_message = is_format_message
+        self.is_format_type = is_format_type
+
+    def __call__(self, error: Exception) -> dict:
+        response_body = dict()
+
+        if self.is_format_message:
+            response_body['message'] = str(error)
+
+        if self.is_format_type:
+            response_body['error-type'] = type(error).__name__
+
+        return response_body
+
 
 
