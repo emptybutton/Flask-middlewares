@@ -288,10 +288,34 @@ def redirect_by(url_resource: str) -> Response:
     return redirect(url_resource)
 
 
-def create_json_response_with(payload: dict, status_code: int = 200) -> Response:
-    """Function to generate flask response with JSON data and status code."""
+class StatusCodeResponseFactory:
+    """
+    Factory class for response with some status code.
+    
+    Determines the status code from the input response_status_code_resource
+    argument, which can be either the status code itself or its parser by
+    response.
+    """
 
-    response = jsonify(payload)
-    response.status_code = self._get_status_code_from(error)
+    def __init__(
+        self,
+        response_status_code_resource: Callable[[any], int] | int,
+        *,
+        response_factory: Callable[[any], any] = Response
+    ):
+        self.response_factory = response_factory
+        self.response_status_code_parser = (
+            response_status_code_resource
+            if isinstance(response_status_code_resource, Callable)
+            else lambda _: response_status_code_resource
+        )
 
-    return response
+    def __call__(self, payload: dict) -> Response:
+        response = self.response_factory(payload)
+        response.status_code = self.response_status_code_parser(payload)
+
+        return response
+
+
+
+
