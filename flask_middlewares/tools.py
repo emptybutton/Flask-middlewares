@@ -216,6 +216,26 @@ class HandlingBrancher:
         )(resource)
 
 
+class Aborter:
+    """Class that implements the abort of some status code by input resource."""
+
+    def __init__(
+        self,
+        status_code_resource_to_abort: int | Callable[[any], int],
+        *,
+        aborter: Callable[[int], any] = abort
+    ):
+        self.aborter = aborter
+        self.aborting_status_code_parser = (
+            status_code_resource_to_abort
+            if isinstance(status_code_resource_to_abort, Callable)
+            else lambda _: status_code_resource_to_abort
+        )
+
+    def __call__(self, resource: any) -> any:
+        return self.aborter(self.aborting_status_code_parser(resource))
+
+
 class TypeDeterminant:
     """
     Class that implements checking whether an object conforms to certain types
