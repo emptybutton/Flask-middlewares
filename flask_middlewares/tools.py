@@ -143,6 +143,27 @@ class HandlerReducer:
         )
 
 
+class HandlingBrancher:
+    """Handler class that implements branching by its determinant."""
+
+    def __init__(
+        self,
+        positive_case_handler: Callable[[any], any],
+        handling_determinant: Callable[[any], bool],
+        negative_case_handler: Callable[[any], any] = lambda _: None
+    ):
+        self.positive_case_handler = positive_case_handler
+        self.handling_determinant = handling_determinant
+        self.negative_case_handler = negative_case_handler
+
+    def __call__(self, resource: any) -> any:
+        return (
+            self.positive_case_handler
+            if self.handling_determinant(resource)
+            else self.negative_case_handler
+        )(resource)
+
+
 class TypeDeterminant:
     """
     Class that implements checking whether an object conforms to certain types
