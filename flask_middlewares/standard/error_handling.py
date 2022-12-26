@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Iterable, Self, Callable
+from typing import NewType, Callable, Iterable
 from functools import cached_property
 
 from flask import jsonify
@@ -124,6 +124,7 @@ class TypeErrorHandler(ErrorHandler, ABC):
     Has the _is_error_correctness_under_supertype flag attribute that specifies
     whether the error type should match the all error support types.
     """
+ErrorHandler = NewType('ErrorHandler', Callable[[Exception], any])
 
     _correct_error_types_to_handle: Iterable[Exception]
     _is_error_correctness_under_supertype: bool = False
@@ -229,18 +230,18 @@ class HandlerErrorMiddleware(ErrorMiddleware, ABC):
     and _PROXY_ERROR_HANDLER_FACTORY attributes are constants.
     """
 
-    _ERROR_HANDLER_RESOURCE: Iterable[IErrorHandler] | IErrorHandler
-    _PROXY_ERROR_HANDLER_FACTORY: Callable[[Iterable[IErrorHandler]], IErrorHandler] = ProxyErrorHandler
+    _ERROR_HANDLER_RESOURCE: Iterable[ErrorHandler] | ErrorHandler
+    _MULTIPLE_ERROR_HANDLER_FACTORY: Callable[[Iterable[ErrorHandler]], ErrorHandler] = MultipleHandler
 
     def _handle_error(self, error: Exception) -> any:
         return self._error_handler(error)
 
     @cached_property
-    def _error_handler(self) -> IErrorHandler:
+    def _error_handler(self) -> ErrorHandler:
         """Property representing a proxy of all other handlers used."""
 
         return (
-            self._PROXY_ERROR_HANDLER_FACTORY(self._ERROR_HANDLER_RESOURCE)
+            self._MULTIPLE_ERROR_HANDLER_FACTORY(self._ERROR_HANDLER_RESOURCE)
             if isinstance(self._ERROR_HANDLER_RESOURCE, Iterable)
             else self._ERROR_HANDLER_RESOURCE
         )
@@ -249,11 +250,11 @@ class HandlerErrorMiddleware(ErrorMiddleware, ABC):
 class CustomHandlerErrorMiddleware(HandlerErrorMiddleware):
     """HandlerErrorMiddleware class with input error handlers."""
 
-    def __init__(self, error_handler_resource: Iterable[IErrorHandler] | IErrorHandler):
+    def __init__(self, error_handler_resource: Iterable[ErrorHandler] | ErrorHandler):
         self._ERROR_HANDLER_RESOURCE = error_handler_resource
 
     @cached_property
-    def error_handler(self) -> IErrorHandler:
+    def error_handler(self) -> ErrorHandler:
         """
         Public version of HandlerErrorMiddleware._error_handler property (See it
         for more information).
