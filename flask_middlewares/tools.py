@@ -185,11 +185,11 @@ class TypeDeterminant:
             else (correct_type_resource, )
         )
 
-    def __call__(self, object_: any) -> bool:
+    def __call__(self, resource: any) -> bool:
         return (
             len(self.correct_types) == 0
             and (all if self.is_correctness_under_supertype else any)(
-                isinstance(object_, correct_type)
+                isinstance(resource, correct_type)
                 for correct_type in self.correct_types
             )
         )
