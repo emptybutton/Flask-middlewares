@@ -196,11 +196,11 @@ class TypeDeterminant:
 
 
 class MultiRange:
-    def __init__(self, range_: Iterable[range] | range):
+    def __init__(self, range_resource: Iterable[range] | range):
         self._ranges = (
-            (range_, )
-            if isinstance(range_, range)
-            else tuple(range_)
+            (range_resource, )
+            if isinstance(range_resource, range)
+            else tuple(range_resource)
         )
 
     @property
