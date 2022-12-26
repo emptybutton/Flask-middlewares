@@ -196,6 +196,15 @@ class TypeDeterminant:
 
 
 class MultiRange:
+    """
+    Class containing ranges to provide them as one object.
+
+    Delegates iteration and containing to its ranges.
+    You can also create a new Multirange based on an old one with ranges, range
+    or another Multirange using the \"|\" operator (or get_with method) on the
+    desired resource.
+    """
+
     def __init__(self, range_resource: Iterable[range] | range):
         self._ranges = (
             (range_resource, )
@@ -208,6 +217,8 @@ class MultiRange:
         return self._ranges
 
     def get_with(self, range_resource: Self | Iterable[range] | range) -> Self:
+        """Method that implements getting a new Multirange with additional ranges."""
+
         if isinstance(range_resource, MultiRange):
             range_resource = range_resource.ranges
 
