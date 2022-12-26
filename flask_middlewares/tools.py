@@ -119,6 +119,58 @@ class BinarySet(StylizedMixin):
         )
 
 
+class MultipleHandler:
+    """
+    Handler proxy class for representing multiple handlers as a single
+    interface.
+
+    Has the is_return_delegated flag attribute to enable or disable returning
+    the result of one from the handlers.
+
+    When one handler returns anything other than None, it returns that value,
+    breaking the loop for other handlers.
+    """
+
+    def __init__(
+        self,
+        handler_resource: Iterable[Callable[[any], any]] | Callable[[any], any],
+        *,
+        is_return_delegated: bool = True
+    ):
+        self.is_return_delegated = is_return_delegated
+        self.handlers = (
+            tuple(handler_resource)
+            if isinstance(handler_resource, Iterable)
+            else (handler_resource, )
+        )
+
+    def __call__(self, resource: any) -> any:
+        for handler in self.handlers:
+            result = handler(resource)
+
+            if self.is_return_delegated and result is not None:
+                return result
+
+    @classmethod
+    def create_factory_decorator(cls, *args, **kwargs) -> Callable[[Callable], Self]:
+        """
+        Factory creation method with interface for one handler.
+
+        Passes additional parameters to the created object from the args and
+        kwargs of this method.
+        """
+
+        def factory_decorator(func: Callable) -> Self:
+            """
+            Factory created by MultipleErrorHandler.create_factory_decorator method.
+            Returns MultipleErrorHandler or its descendant with one input handler.
+            """
+
+            return cls((func, ), *args, **kwargs)
+
+        return factory_decorator
+
+
 class HandlerReducer:
     """Handler class that implements handling as a chain of actions of other handlers."""
 

@@ -15,56 +15,7 @@ class IErrorHandler(ABC):
         pass
 
 
-class ProxyErrorHandler(IErrorHandler):
-    """
-    Error handler proxy class for representing multiple handlers as a single
-    interface.
-
-    Has the is_return_delegated flag attribute to enable or disable returning
-    the result of one of the handlers.
-
-    When one handler returns anything other than None, it returns that value,
-    breaking the loop for other handlers.
-    """
-
-    def __init__(
-        self,
-        error_handlers: Iterable[IErrorHandler] | IErrorHandler,
-        *,
-        is_return_delegated: bool = True
-    ):
-        self.is_return_delegated = is_return_delegated
-        self.error_handlers = (
-            tuple(error_handlers)
-            if isinstance(error_handlers, Iterable)
-            else (error_handlers, )
-        )
-
-    def __call__(self, error: Exception) -> any:
-        for error_handler in self.error_handlers:
-            result = error_handler(error)
-
-            if self.is_return_delegated and result is not None:
-                return result
-
-    @classmethod
-    def create_factory_decorator(cls, *args, **kwargs) -> Callable[[Callable], Self]:
-        """
-        Factory creation method with interface for one handler.
-
-        Passes additional parameters to the created object from the args and
-        kwargs of this method.
-        """
-
-        def factory_decorator(func: Callable) -> Self:
-            """
-            Factory created by ProxyErrorHandler.create_factory_decorator method.
-            Returns ProxyErrorHandler or its descendant with one input handler.
-            """
-
-            return cls((func, ), *args, **kwargs)
-
-        return factory_decorator
+from flask_middlewares.tools import MultipleHandler
 
 
 class ErrorHandler(IErrorHandler, ABC):
