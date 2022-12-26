@@ -205,7 +205,7 @@ class JSONResponseTemplatedErrorFormatter(JSONResponseFormatter):
         return type(error).__name__
 
 
-class ErrorMiddleware(Middleware, ABC):
+class ErrorHandlingMiddleware(Middleware, ABC):
     """Middleware class that handles errors that occurred in routers."""
 
     def call_route(self, route: Callable, *args, **kwargs) -> any:
@@ -219,15 +219,16 @@ class ErrorMiddleware(Middleware, ABC):
         """Method that implements response to an error that has occurred."""
 
 
-class HandlerErrorMiddleware(ErrorMiddleware, ABC):
+class ErrorHandlerMiddleware(ErrorHandlingMiddleware, ABC):
     """
-    ErrorMiddleware delegating error handling to error handlers.
+    ErrorHandlingMiddleware delegating error handling to error handlers.
 
-    Represents its handlers as a single proxy handler. To create a proxy, it
-    takes handlers from the _ERROR_HANDLER_RESOURCE attribute, which is
-    represented as one or more handlers. Creates a proxy handler only when it's
-    time to interact with the corresponding property, so _ERROR_HANDLER_RESOURCE
-    and _PROXY_ERROR_HANDLER_FACTORY attributes are constants.
+    Represents its handlers as a single multiple handler. To create a multiple
+    handler, it takes handlers from the _ERROR_HANDLER_RESOURCE attribute, which
+    is represented as one or more handlers. Creates a multiple handler only when
+    it's time to interact with the corresponding property, so
+    _ERROR_HANDLER_RESOURCE and _MULTIPLE_ERROR_HANDLER_FACTORY attributes are
+    constants.
     """
 
     _ERROR_HANDLER_RESOURCE: Iterable[ErrorHandler] | ErrorHandler
@@ -247,8 +248,10 @@ class HandlerErrorMiddleware(ErrorMiddleware, ABC):
         )
 
 
-class CustomHandlerErrorMiddleware(HandlerErrorMiddleware):
-    """HandlerErrorMiddleware class with input error handlers."""
+class CustomErrorHandlerMiddleware(ErrorHandlerMiddleware):
+    """
+    ErrorHandlerMiddleware class with input error handlers. See it for more info.
+    """
 
     def __init__(self, error_handler_resource: Iterable[ErrorHandler] | ErrorHandler):
         self._ERROR_HANDLER_RESOURCE = error_handler_resource
@@ -256,7 +259,7 @@ class CustomHandlerErrorMiddleware(HandlerErrorMiddleware):
     @cached_property
     def error_handler(self) -> ErrorHandler:
         """
-        Public version of HandlerErrorMiddleware._error_handler property (See it
+        Public version of ErrorHandlerMiddleware._error_handler property (See it
         for more information).
         """
         
