@@ -7,20 +7,6 @@ from flask import Response, Config, url_for, redirect, jsonify, abort
 from werkzeug.routing import BuildError
 
 
-def get_status_code_from(response: any) -> int:
-    """Function to get code status from non-structural data."""
-
-    if isinstance(response, Response):
-        return response.status_code
-    elif (
-        isinstance(response, Iterable)
-        and len(response) >= 2
-        and isinstance(response[1], int | float)
-        and int(response[1]) == response[1]
-    ):
-        return response[1]
-    else:
-        return 200
 
 
 class BinarySet(StylizedMixin):
@@ -119,26 +105,6 @@ class BinarySet(StylizedMixin):
         )
 
 
-class Aborter:
-    """Class that implements the abort of some status code by input resource."""
-
-    def __init__(
-        self,
-        status_code_resource_to_abort: int | Callable[[any], int],
-        *,
-        aborter: Callable[[int], any] = abort
-    ):
-        self.aborter = aborter
-        self.aborting_status_code_parser = (
-            status_code_resource_to_abort
-            if isinstance(status_code_resource_to_abort, Callable)
-            else lambda _: status_code_resource_to_abort
-        )
-
-    def __call__(self, resource: any) -> any:
-        return self.aborter(self.aborting_status_code_parser(resource))
-
-
 class MultiRange:
     """
     Class containing ranges to provide them as one object.
@@ -189,95 +155,5 @@ class MultiRange:
 
     def __or__(self, range_resource: Self | Iterable[range] | range) -> Self:
         return self.get_with(range_resource)
-
-
-class StatusCodeGroup:
-    """
-    Class for storing the HTTP status codes of responses in the form of a
-    structure and declarative access to them.
-    """
-
-    INFORMATIONAL: Final[MultiRange] = MultiRange(range(100, 200))
-    SUCCESSFUL: Final[MultiRange] = MultiRange(range(200, 300))
-    REDIRECTION: Final[MultiRange] = MultiRange(range(300, 400))
-    CLIENT_ERROR: Final[MultiRange] = MultiRange(range(400, 500))
-    SERVER_ERROR: Final[MultiRange] = MultiRange(range(500, 600))
-
-    GOOD: Final[MultiRange] = MultiRange(range(100, 400))
-    ERROR: Final[MultiRange] = MultiRange(range(400, 600))
-
-    ALL: Final[MultiRange] = MultiRange(range(100, 600))
-
-
-def parse_config_from(
-    file_name: str,
-    config_parse_method: Callable[[Config, str], None]=Config.from_object
-) -> Config:
-    """Function for creating a config, delegating the update method to it."""
-
-    config = Config(str())
-    config_parse_method(config, file_name)
-
-    return config
-
-
-def redirect_by(url_resource: str) -> Response:
-    """Function to get redirect with possible url from blueprints."""
-
-    try:
-        url_resource = url_for(url_resource)
-    except BuildError:
-        url_resource = url_resource
-
-    return redirect(url_resource)
-
-
-class StatusCodeResponseFactory:
-    """
-    Factory class for response with some status code.
-    
-    Determines the status code from the input response_status_code_resource
-    argument, which can be either the status code itself or its parser by
-    response.
-    """
-
-    def __init__(
-        self,
-        response_status_code_resource: Callable[[any], int] | int,
-        *,
-        response_factory: Callable[[any], any] = Response
-    ):
-        self.response_factory = response_factory
-        self.response_status_code_parser = (
-            response_status_code_resource
-            if isinstance(response_status_code_resource, Callable)
-            else lambda _: response_status_code_resource
-        )
-
-    def __call__(self, payload: dict) -> Response:
-        response = self.response_factory(payload)
-        response.status_code = self.response_status_code_parser(payload)
-
-        return response
-
-
-class BaseExceptionDictTemplater:
-    """Formatter class that formatting an error in dict."""
-
-    def __init__(self, *, is_format_message: bool = True, is_format_type: bool = True):
-        self.is_format_message = is_format_message
-        self.is_format_type = is_format_type
-
-    def __call__(self, error: Exception) -> dict:
-        response_body = dict()
-
-        if self.is_format_message:
-            response_body['message'] = str(error)
-
-        if self.is_format_type:
-            response_body['error-type'] = type(error).__name__
-
-        return response_body
-
 
 
