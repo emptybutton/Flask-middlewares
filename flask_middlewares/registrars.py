@@ -1,8 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable, Self, Final, ClassVar, Optional
+from typing import Self, Final, Callable, Iterable, ClassVar, Optional
 
 from flask import Flask, Blueprint
 from pyhandling import DelegatingProperty
+from pyhandling.annotations import decorator
 
 from flask_middlewares.core import IMiddleware, MonolithMiddleware, MultipleMiddleware
 from flask_middlewares.errors import MiddlewareRegistrarConfigError
@@ -51,10 +52,10 @@ class MiddlewareRegistrar(IMiddlewareRegistrar):
 
     def __init__(
         self,
-        middlewares: Iterable[IMiddleware],
+        middlewares: Iterable[IMiddleware | decorator],
         *,
         view_names: Iterable[str] = BinarySet(),
-        blueprints: Iterable[str | Blueprint] = BinarySet(),
+        blueprints: Iterable[Blueprint | str] = BinarySet(),
         is_apply_static: bool = False,
         is_apply_root_views: bool = True
     ):
