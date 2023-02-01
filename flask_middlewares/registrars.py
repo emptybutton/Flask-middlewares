@@ -37,7 +37,7 @@ class MiddlewareRegistrar(IMiddlewareRegistrar):
     """
     Class that implements middleware integration in a Flask application.
 
-    Can be created using config variables (See create_from_config class method).
+    Can be created using config variables (See from_config class method).
     """
 
     _proxy_middleware_factory: Callable[[Iterable[IMiddleware | decorator]], MonolithMiddleware] = MultipleMiddleware
@@ -95,7 +95,7 @@ class MiddlewareRegistrar(IMiddlewareRegistrar):
         return cls._default_config_field_names
 
     @classmethod
-    def create_from_config(
+    def from_config(
         cls,
         config: dict,
         *args,
@@ -331,7 +331,7 @@ class MultipleMiddlewareRegistrar(IMiddlewareRegistrar):
             registrar.init_app(app)
 
     @classmethod
-    def create_from_config(
+    def from_config(
         cls,
         config: dict,
         *args,
