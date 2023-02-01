@@ -74,24 +74,12 @@ class DecoratorMiddleware(IMiddleware):
     Middleware class which is an adapter of classical decorators for the
     Middleware interface.
 
-    Accepts both one decorator and their collection.
-
     Not optimal for using call_route, since every time the router is called, it
     decorates it and only then calls.
     """
 
-    def __init__(
-        self,
-        decorator_resource: (
-            Callable[[Callable], Callable]
-            | Iterable[Callable[[Callable], Callable]]
-        )
-    ):
-        self.decorators = (
-            tuple(decorator_resource)
-            if isinstance(decorator_resource, Iterable)
-            else (decorator_resource, )
-        )
+    def __init__(self, decorator: Callable[[Callable], Callable]):
+        self._decorator = decorator
 
     def decorate(self, route: Callable) -> Callable:
         return reduce(
