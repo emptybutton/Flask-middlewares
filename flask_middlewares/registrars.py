@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from functools import partial
 from typing import Self, Final, Callable, Iterable, ClassVar, Optional
 
 from flask import Flask, Blueprint
