@@ -16,10 +16,6 @@ DEFAULT_MIDDLEWARE_CONFIG_FIELD_NAMES: Final[dict[str, str]] = {
     'is_using_global': 'USE_GLOBAL_MIDDLEWARES',
     'is_global_middlewares_higher': 'IS_GLOBAL_MIDDLEWARES_HIGHER',
     'is_environment_middlewares_higher': 'IS_ENVIRONMENT_MIDDLEWARES_HIGHER'
-}
-
-DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES: Final[dict[str, str]] = {
-    **DEFAULT_APP_CONFIG_FIELD_NAMES,
     'view_names': 'MIDDLEWARE_VIEW_NAMES',
     'blueprints': 'MIDDLEWARE_BLUEPRINTS',
     'use_for_blueprint': 'USE_FOR_BLUEPRINT',
