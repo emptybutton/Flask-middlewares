@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 from typing import Callable, Iterable, Optional
 from functools import wraps, partial, reduce
 
+from pyhandling import DelegatingProperty, post_partial, then, on_condition, return_
+from pyhandling.annotations import decorator
+
 
 class IMiddleware(ABC):
     """Middleware interface that dynamically decorates an endpoint function."""
@@ -46,8 +49,16 @@ class MultipleMiddleware(MonolithMiddleware):
     ones are nested in previous ones.
     """
 
-    def __init__(self, middlewares: Iterable[IMiddleware]):
-        self.middlewares = middlewares
+    middlewares = DelegatingProperty("_middlewares")
+
+    def __init__(self, middleware_resources: Iterable[IMiddleware | decorator]):
+        self._middlewares = post_partial(map |then>> tuple, middleware_resources)(
+            on_condition(
+                post_partial(isinstance, IMiddleware),
+                return_,
+                else_=DecoratorMiddleware
+            ),
+        )
 
     def call_route(self, route: Callable, *args, **kwargs) -> any:
         call_layer = route
