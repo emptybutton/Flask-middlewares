@@ -84,10 +84,7 @@ class DecoratorMiddleware(IMiddleware):
         self._decorator = decorator
 
     def decorate(self, route: Callable) -> Callable:
-        return reduce(
-            lambda route, decorator: decorator(route),
-            (route, *self.decorators)
-        )
+        return self.decorator(route)
 
     def call_route(self, route: Callable, *args, **kwargs) -> any:
         return self.decorate(route)(*args, **kwargs)
