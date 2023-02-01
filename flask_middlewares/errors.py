@@ -2,9 +2,9 @@ class MiddlewareError(Exception):
     pass
 
 
-class MiddlewareAppRegistrarError(MiddlewareError):
+class MiddlewareRegistrarError(MiddlewareError):
     pass
 
 
-class MiddlewareRegistrarConfigError(MiddlewareAppRegistrarError):
+class MiddlewareRegistrarConfigError(MiddlewareRegistrarError):
     pass
