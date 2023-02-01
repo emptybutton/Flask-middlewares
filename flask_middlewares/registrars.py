@@ -3,7 +3,7 @@ from typing import Callable, Iterable, Self, Final, ClassVar, Optional
 
 from flask import Flask, Blueprint
 
-from flask_middlewares.core import IMiddleware, ProxyMiddleware
+from flask_middlewares.core import IMiddleware, MonolithMiddleware, MultipleMiddleware
 from flask_middlewares.errors import MiddlewareRegistrarConfigError
 from flask_middlewares.tools import BinarySet
 
@@ -52,8 +52,8 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
     Can be created using config variables (See create_from_config class method).
     """
 
-    _proxy_middleware_factory: Callable[[Iterable[IMiddleware]], ProxyMiddleware] = ProxyMiddleware
     _default_config_field_names: ClassVar[dict[str, str]] = DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES
+    _proxy_middleware_factory: Callable[[Iterable[IMiddleware | decorator]], MonolithMiddleware] = MultipleMiddleware
 
     def __init__(
         self,
@@ -335,7 +335,7 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
     Used to call multiple registrars to one application.
     """
 
-    def __init__(self, registrars: Iterable[FlaskAppMiddlewareRegistrar]):
+    def __init__(self, registrars: Iterable[MiddlewareRegistrar]):
         self.registrars = registrars
 
     def init_app(self, app: Flask) -> None:

@@ -21,7 +21,7 @@ class IMiddleware(ABC):
         """
 
 
-class Middleware(IMiddleware, ABC):
+class MonolithMiddleware(IMiddleware, ABC):
     """
     The abstract base class of middleware (See IMiddleware for more information).
 
@@ -37,7 +37,7 @@ class Middleware(IMiddleware, ABC):
         return calling_proxy
 
 
-class ProxyMiddleware(Middleware):
+class MultipleMiddleware(MonolithMiddleware):
     """
     Middleware class delegating delegation to other middlewares.
 
@@ -58,7 +58,7 @@ class ProxyMiddleware(Middleware):
         return call_layer(*args, **kwargs)
 
 
-class DecoratorAdapterMiddleware(IMiddleware):
+class DecoratorMiddleware(IMiddleware):
     """
     Middleware class which is an adapter of classical decorators for the
     Middleware interface.
