@@ -13,9 +13,6 @@ from flask_middlewares.tools import BinarySet
 
 DEFAULT_MIDDLEWARE_CONFIG_FIELD_NAMES: Final[dict[str, str]] = {
     'middlewares': 'MIDDLEWARES',
-    'global_middlewares': 'GLOBAL_MIDDLEWARES',
-    'is_using_global': 'USE_GLOBAL_MIDDLEWARES',
-    'is_global_middlewares_higher': 'IS_GLOBAL_HIGHER',
     'view_names': 'VIEW_NAMES',
     'blueprints': 'BLUEPRINTS',
     'environments': 'ENVIRONMENTS',
@@ -112,21 +109,12 @@ class MiddlewareRegistrar(IMiddlewareRegistrar):
 
         {blueprints} - blueprints with which the registrar will be initialized.
 
-        {global_middlewares} - Additional middleware globally added to registrars.
-
-        {is_using_global} - Flag indicating the presence of middlewares from
-        {global_middlewares}. DEFAULT True.
-
-        {is_global_middlewares_higher} - Flag denoting the locations of
-        middlewares from {global_middlewares} DEFAULT True.
-
         {environments} - Dictionary in the format
         [environment_name: str, config: dict] in the config where variables will
-        be searched except for {global_middlewares} which will be taken from the
-        original.
+        be searched.
 
         {is_environment_middlewares_higher} - Flag defining the position of ALL
-        (including global) middlewares from the environment. DEFAULT False.
+        middlewares from the environment. DEFAULT False.
 
         {use_for_blueprint} - When assigned, adds the blueprint from the value
         of the variable to the blueprints attribute and disables
@@ -145,29 +133,15 @@ class MiddlewareRegistrar(IMiddlewareRegistrar):
 
         config_field_names = cls._default_config_field_names | config_field_names
 
-        global_middlewares = cls.__get_global_middlewares_from(config, config_field_names)
-
         if environment is not None:
-            global_middlewares = cls.__get_global_middlewares_from(config, config_field_names)
             config = config[config_field_names['environments']].get(environment)
 
             if config is None:
                 raise MiddlewareRegistrarConfigError(f"Environment \"{environment}\" missing")
-
-            environment_global_middlewares = cls.__get_global_middlewares_from(config, config_field_names)
-
-            if (
-                config.get(config_field_names['is_environment_middlewares_higher'], False)
-                if is_environment_middlewares_higher is None
-                else is_environment_middlewares_higher
-            ):
-                global_middlewares = environment_global_middlewares + global_middlewares
-            else:
-                global_middlewares += environment_global_middlewares
      
         middlewares = config.get(config_field_names['middlewares'], tuple())
 
-        if not middlewares and not global_middlewares:
+        if not middlewares:
             raise MiddlewareRegistrarConfigError(
                 "{config_name} doesn't have any available middlewares".format(
                     config_name=(
@@ -176,22 +150,6 @@ class MiddlewareRegistrar(IMiddlewareRegistrar):
                     )
                 )
             )
-
-        if (
-            config.get(config_field_names['is_using_global'], True)
-            if is_using_global is None
-            else is_using_global
-        ):
-            middleware_packs = [global_middlewares, middlewares]
-
-            if not (
-                config.get(config_field_names['is_global_middlewares_higher'], True)
-                if is_global_middlewares_higher is None
-                else is_global_middlewares_higher
-            ):
-                middleware_packs.reverse()
-
-            middlewares = (*middleware_packs[0], *middleware_packs[1])
 
         if view_names is None:
             view_names = config.get(config_field_names['view_names'])
