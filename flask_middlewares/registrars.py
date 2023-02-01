@@ -14,12 +14,12 @@ from flask_middlewares.tools import BinarySet
 DEFAULT_MIDDLEWARE_CONFIG_FIELD_NAMES: Final[dict[str, str]] = {
     'middlewares': 'MIDDLEWARES',
     'global_middlewares': 'GLOBAL_MIDDLEWARES',
-    'environments': 'ENVIRONMENTS',
     'is_using_global': 'USE_GLOBAL_MIDDLEWARES',
     'is_global_middlewares_higher': 'IS_GLOBAL_HIGHER',
-    'is_environment_middlewares_higher': 'IS_ENVIRONMENT_HIGHER',
     'view_names': 'VIEW_NAMES',
     'blueprints': 'BLUEPRINTS',
+    'environments': 'ENVIRONMENTS',
+    'is_environment_middlewares_higher': 'IS_ENVIRONMENT_HIGHER',
     'use_for_blueprint': 'USE_FOR_BLUEPRINT',
     'is_apply_static': 'IS_APPLY_STATIC',
     'is_apply_root_views': 'IS_APPLY_ROOT_VIEWS'
