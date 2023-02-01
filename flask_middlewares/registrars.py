@@ -8,25 +8,7 @@ from flask_middlewares.errors import MiddlewareRegistrarConfigError
 from flask_middlewares.tools import BinarySet
 
 
-class IAppMiddlewareRegistrar(ABC):
-    """Registrar interface for middleware integration with some application."""
-
-    @abstractmethod
-    def init_app(self, app: object) -> None:
-        """Method for integrating middlewares with input application."""
-
-    @classmethod
-    @abstractmethod
-    def create_from_config(cls, config: dict, *args, **kwargs) -> Self:
-        """
-        Method for creating middleware registrar using config.
-
-        In keyword arguments, it accepts arguments that complement | overwriting
-        config data.
-        """
-
-
-DEFAULT_APP_CONFIG_FIELD_NAMES: Final[dict[str, str]] = {
+DEFAULT_MIDDLEWARE_CONFIG_FIELD_NAMES: Final[dict[str, str]] = {
     'middlewares': 'MIDDLEWARES',
     'global_middlewares': 'GLOBAL_MIDDLEWARES',
     'environments': 'MIDDLEWARE_ENVIRONMENTS',
@@ -45,15 +27,21 @@ DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES: Final[dict[str, str]] = {
 }
 
 
-class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
+class IMiddlewareRegistrar(ABC):
+    @abstractmethod
+    def init_app(self, app: Flask) -> None:
+        ...
+
+
+class MiddlewareRegistrar(IMiddlewareRegistrar):
     """
     Class that implements middleware integration in a Flask application.
 
     Can be created using config variables (See create_from_config class method).
     """
 
-    _default_config_field_names: ClassVar[dict[str, str]] = DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES
     _proxy_middleware_factory: Callable[[Iterable[IMiddleware | decorator]], MonolithMiddleware] = MultipleMiddleware
+    _default_config_field_names: ClassVar[dict[str, str]] = DEFAULT_MIDDLEWARE_CONFIG_FIELD_NAMES
 
     def __init__(
         self,
@@ -127,7 +115,7 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
 
         In keyword arguments, it accepts arguments that complement | overwriting
         config data. Takes the name of standard config of names of this class
-        (see DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES or
+        (see DEFAULT_MIDDLEWARE_CONFIG_FIELD_NAMES or
         \"the name of this class\".default_config_field_names) and the config
         variables from the input config_field_names argument.
 
@@ -328,9 +316,9 @@ class FlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         return field_value
 
 
-class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
+class MultipleMiddlewareRegistrar(IMiddlewareRegistrar):
     """
-    FlaskAppMiddlewareRegistrar proxy class.
+    MiddlewareRegistrar proxy class.
 
     Used to call multiple registrars to one application.
     """
@@ -347,8 +335,8 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
         cls,
         config: dict,
         *args,
-        config_field_names: dict[str, str] = DEFAULT_FLASK_APP_CONFIG_FIELD_NAMES,
-        registrar_factory: Callable[[dict], IAppMiddlewareRegistrar] = FlaskAppMiddlewareRegistrar.create_from_config,
+        config_field_names: dict[str, str] = DEFAULT_MIDDLEWARE_CONFIG_FIELD_NAMES,
+        registrar_factory: Callable[[dict], IMiddlewareRegistrar] = MiddlewareRegistrar.from_config,
         is_root_registrar_creating: bool = True,
         **kwargs
     ) -> Self:
@@ -359,7 +347,7 @@ class ProxyFlaskAppMiddlewareRegistrar(IAppMiddlewareRegistrar):
 
         In keyword arguments, it accepts arguments delegating to Flask's
         registry factory method (Default is
-        FlaskAppMiddlewareRegistrar.create_from_config. See it for default usage).
+        MiddlewareRegistrar.from_config. See it for default usage).
 
         Despite delegation, it has several other keyword arguments that control
         the delegation process:
