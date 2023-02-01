@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Callable, Iterable, Self, Final, ClassVar, Optional
 
 from flask import Flask, Blueprint
+from pyhandling import DelegatingProperty
 
 from flask_middlewares.core import IMiddleware, MonolithMiddleware, MultipleMiddleware
 from flask_middlewares.errors import MiddlewareRegistrarConfigError
@@ -40,6 +41,15 @@ class MiddlewareRegistrar(IMiddlewareRegistrar):
     Can be created using config variables (See from_config class method).
     """
 
+    __binary_set_attribute_propery_factory = partial(
+        DelegatingProperty,
+        settable=True,
+        setting_converter=BinarySet.create_simulated_by
+    )
+
+    view_names = __binary_set_attribute_propery_factory("_view_names")
+    blueprints = __binary_set_attribute_propery_factory("_blueprints")
+
     _proxy_middleware_factory: Callable[[Iterable[IMiddleware | decorator]], MonolithMiddleware] = MultipleMiddleware
     _default_config_field_names: ClassVar[dict[str, str]] = DEFAULT_MIDDLEWARE_CONFIG_FIELD_NAMES
 
@@ -52,7 +62,7 @@ class MiddlewareRegistrar(IMiddlewareRegistrar):
         is_apply_static: bool = False,
         is_apply_root_views: bool = True
     ):
-        self.proxy_middleware = self._proxy_middleware_factory(middlewares)
+        self._proxy_middleware = self._proxy_middleware_factory(middlewares)
 
         self.view_names = view_names
         self.blueprints = blueprints
@@ -61,38 +71,13 @@ class MiddlewareRegistrar(IMiddlewareRegistrar):
         self.is_apply_root_views = is_apply_root_views
 
     @property
-    def middlewares(self) -> Iterable[IMiddleware]:
-        return self.proxy_middleware.middlewares
-
-    @middlewares.setter
-    def middlewares(self, middlewares: Iterable[IMiddleware]) -> None:
-        self.proxy_middleware.middlewares = middlewares
-
-    @property
-    def view_names(self) -> BinarySet:
-        return self._view_names
-
-    @view_names.setter
-    def view_names(self, view_names: Iterable[str]) -> None:
-        self._view_names = BinarySet.create_simulated_by(view_names)
-
-    @property
-    def blueprints(self) -> BinarySet:
-        return self._blueprints
-
-    @blueprints.setter
-    def blueprints(self, blueprints: Iterable[str | Blueprint]) -> None:
-        self._blueprints = BinarySet.create_simulated_by(blueprints)
+    def middlewares(self) -> tuple[IMiddleware]:
+        return self._proxy_middleware.middlewares
 
     def init_app(self, app: Flask) -> None:
         for view_name, view_function in tuple(app.view_functions.items())[::-1]:
             if self._is_support_view_name_for_registration(view_name):
-                app.view_functions[view_name] = self.proxy_middleware.decorate(view_function)
-
-    @classmethod
-    @property
-    def default_config_field_names(cls) -> dict[str, str]:
-        return cls._default_config_field_names
+                app.view_functions[view_name] = self._proxy_middleware.decorate(view_function)
 
     @classmethod
     def from_config(
