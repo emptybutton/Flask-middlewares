@@ -265,7 +265,7 @@ class MultipleMiddlewareRegistrar(IMiddlewareRegistrar):
     """
 
     def __init__(self, registrars: Iterable[MiddlewareRegistrar]):
-        self.registrars = registrars
+        self.registrars = tuple(registrars)
 
     def init_app(self, app: Flask) -> None:
         for registrar in self.registrars:
