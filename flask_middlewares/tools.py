@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Self, Callable, Final
+from typing import Optional, Iterable, Self, Callable, Final, Container
 
 from beautiful_repr import StylizedMixin, Field, TemplateFormatter
 
@@ -99,3 +99,4 @@ class BinarySet(StylizedMixin):
         )
 
 
+EVERYTHING: Final[Container] = BinarySet()
