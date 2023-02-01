@@ -278,7 +278,7 @@ class MultipleMiddlewareRegistrar(IMiddlewareRegistrar):
         *args,
         config_field_names: dict[str, str] = DEFAULT_MIDDLEWARE_CONFIG_FIELD_NAMES,
         registrar_factory: Callable[[dict], IMiddlewareRegistrar] = MiddlewareRegistrar.from_config,
-        is_root_registrar_creating: bool = True,
+        environments_only: bool = False,
         **kwargs
     ) -> Self:
         """
@@ -296,10 +296,9 @@ class MultipleMiddlewareRegistrar(IMiddlewareRegistrar):
         registrar_factory - Factory for the registrars. Ignore if you don't want
         to initialize the proxy with some other registrars.
 
-        is_root_registrar_creating - Defines the initialization of the registrar
-        using general purpose config variables. DEFAULT True. Disable it if you
-        want to initialize registrars only from the environments. Doesn't change
-        the influence of the standard environment on other environments.
+        environments_only - Defines the initialization of the registrar
+        using general purpose config variables. DEFAULT False. Enable it if you
+        want to initialize registrars only from the environments.
         """
 
         environments = list(config.get(
@@ -307,7 +306,7 @@ class MultipleMiddlewareRegistrar(IMiddlewareRegistrar):
             dict()
         ).keys())
 
-        if is_root_registrar_creating:
+        if not environments_only:
             environments.append(None)
 
         return cls(
