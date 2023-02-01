@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from functools import partial
 from typing import Self, Final, Callable, Iterable, ClassVar, Optional
 
-from flask import Flask, Blueprint
+from flask import Blueprint, Flask
 from pyhandling import DelegatingProperty
 from pyhandling.annotations import decorator
 
