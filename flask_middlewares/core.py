@@ -78,6 +78,8 @@ class DecoratorMiddleware(IMiddleware):
     decorates it and only then calls.
     """
 
+    decorator = DelegatingProperty('_decorator')
+
     def __init__(self, decorator: Callable[[Callable], Callable]):
         self._decorator = decorator
 
