@@ -2,7 +2,7 @@
 Allows you to use middleware in Flask
 
 ### Installation
-`pip install flask_middlewares`
+`pip install Flask-Middlewares`
 
 ### Example
 ```python
