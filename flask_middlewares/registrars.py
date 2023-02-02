@@ -319,3 +319,11 @@ class MultipleMiddlewareRegistrar(IMiddlewareRegistrar):
             )
             for environment in environments
         )
+
+
+__all__ = (
+    "DEFAULT_MIDDLEWARE_CONFIG_FIELD_NAMES",
+    "IMiddlewareRegistrar",
+    "MiddlewareRegistrar",
+    "MultipleMiddlewareRegistrar"
+)

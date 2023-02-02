@@ -100,3 +100,9 @@ class BinarySet(StylizedMixin):
 
 
 EVERYTHING: Final[Container] = BinarySet()
+
+
+__all__ = (
+    "BinarySet",
+    "EVERYTHING"
+)
