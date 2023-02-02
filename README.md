@@ -52,17 +52,17 @@ app.config["ENVIRONMENTS"] = {
 
 @app.route('/')
 def index():
-    return "Real but fake home page" # Real but fake home page from global
+    return "Real but fake home page" # ... from global
 
 
 @view_blueprint.route('/home')
 def home_endpoint():
-    return "Real home page" # Real home page from global
+    return "Real home page" # ... from global
 
 
 @api_blueprint.route('/users')
 def user_api_endpoint():
-    return "\"Some user data\"" # "Some user data" from global from api
+    return "\"Some user data\"" # ... from global from api
 
 
 app.register_blueprint(api_blueprint, url_prefix='/api')
